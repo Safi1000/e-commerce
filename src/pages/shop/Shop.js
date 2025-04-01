@@ -285,17 +285,17 @@ export default function Shop() {
             <div className="bg-gray-900 border border-gray-800 rounded-sm p-6 mb-6">
               <h2 className="text-xl font-bold mb-4 font-poppins">SEARCH</h2>
               <form onSubmit={handleSearchSubmit} className="space-y-2">
-                <div className="flex items-center">
+                <div className="hidden md:flex items-center flex-1 max-w-md ">
                   <input
                     type="text"
                     placeholder="Search products..."
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-sm focus:outline-none focus:border-white text-white"
+                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-sm focus:outline-none focus:border-white transition-all text-white"
                   />
                   <button
                     type="submit"
-                    className="bg-white text-black px-4 py-2 rounded-sm hover:bg-gray-200 transition-colors ml-2"
+                    className="bg-white text-black px-4 py-2 rounded-sm hover:bg-gray-200 transition-colors "
                   >
                     <Search size={18} />
                   </button>
