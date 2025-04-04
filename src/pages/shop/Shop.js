@@ -9,6 +9,7 @@ import { useAuth } from "../../contexts/AuthContext"
 import { getImage } from "../../utils/imageApi"
 import { motion } from "framer-motion"
 import { Search, Filter, X, Check, ChevronRight, ShoppingBag } from "lucide-react"
+import { Slider } from '@mui/material';
 
 export default function Shop() {
   const [products, setProducts] = useState([])
@@ -238,6 +239,16 @@ export default function Shop() {
     return `https://via.placeholder.com/${width}x${height}/1a1a1a/ffffff?text=ShopEase`
   }
 
+  const handleSliderChange = (event, newValue) => {
+    setPriceRange({ min: newValue[0], max: newValue[1] });
+    const params = new URLSearchParams(location.search);
+    params.set('minPrice', newValue[0]);
+    params.set('maxPrice', newValue[1]);
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (searchTerm.trim()) params.set('search', searchTerm.trim());
+    navigate({ pathname: '/shop', search: params.toString() }, { replace: true });
+  };
+
   return (
     <div className="bg-black text-white min-h-screen">
       <div className="container mx-auto px-4 py-12">
@@ -342,6 +353,14 @@ export default function Shop() {
 
             <div className="bg-gray-900 border border-gray-800 rounded-sm p-6 mb-6">
               <h2 className="text-xl font-bold mb-4 font-poppins">PRICE RANGE</h2>
+              <Slider
+                value={[priceRange.min || 0, priceRange.max || 1000]}
+                onChange={handleSliderChange}
+                valueLabelDisplay="auto"
+                min={0}
+                max={1000}
+                sx={{ color: 'white' }}
+              />
               <div className="space-y-4">
                 <div>
                   <label htmlFor="min" className="block text-sm text-gray-300 mb-1 font-inter">
