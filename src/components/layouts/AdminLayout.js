@@ -1,11 +1,14 @@
 "use client"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
+import ThemeToggle from "../ThemeToggle"
+import { useTheme } from "../../contexts/ThemeContext"
 
 export default function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { logout, currentUser } = useAuth()
+  const { theme } = useTheme()
 
   const handleLogout = async () => {
     try {
@@ -21,16 +24,17 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className={`flex h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} theme-transition`}>
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md">
-        <div className="flex h-16 items-center justify-center border-b">
-          <Link to="/admin" className="text-xl font-bold text-blue-600">
+      <div className={`w-64 ${theme === "dark" ? "bg-gray-800" : "bg-white"} shadow-md theme-transition`}>
+        <div className={`flex h-16 items-center justify-between px-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+          <Link to="/admin" className={`text-xl font-bold ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
             ShopEase Admin
           </Link>
+          <ThemeToggle />
         </div>
         <nav className="mt-6">
-          <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">Dashboard</div>
+          <div className={`px-4 py-2 text-xs font-semibold ${theme === "dark" ? "text-gray-400" : "text-gray-500"} uppercase`}>Dashboard</div>
           <Link
             to="/admin"
             className={`flex items-center px-4 py-3 ${
@@ -38,11 +42,15 @@ export default function AdminLayout() {
               !isActive("/admin/products") &&
               !isActive("/admin/categories") &&
               !isActive("/admin/orders")
-                ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2"
-                : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
+                ? theme === "dark" 
+                  ? "bg-gray-700 text-blue-400 rounded-lg ml-2 mr-2" 
+                  : "bg-blue-50 text-blue-600 rounded-lg ml-2 mr-2"
+                : theme === "dark"
+                  ? "text-gray-300 hover:bg-gray-700 hover:rounded-lg ml-2 mr-2"
+                  : "text-gray-600 hover:bg-gray-50 hover:rounded-lg ml-2 mr-2"
             }`}
           >
-            <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={`h-5 w-5 mr-3 ${theme === "dark" ? "text-current" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
             </svg>
             Overview
@@ -142,16 +150,16 @@ export default function AdminLayout() {
             Back to Shop
           </Link>
         </nav>
-        <div className="absolute bottom-0 w-64 border-t p-4">
+        <div className={`absolute bottom-0 w-64 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"} p-4`}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">
+              <div className={`h-10 w-10 rounded-full ${theme === "dark" ? "bg-gray-600" : "bg-gray-200"} flex items-center justify-center ${theme === "dark" ? "text-gray-300" : "text-gray-700"} font-bold`}>
                 {currentUser?.displayName?.charAt(0) || "A"}
               </div>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700">{currentUser?.displayName || "Admin User"}</p>
-              <button onClick={handleLogout} className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+              <p className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{currentUser?.displayName || "Admin User"}</p>
+              <button onClick={handleLogout} className={`text-xs font-medium ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-500 hover:text-gray-700"} transition-colors`}>
                 Sign out
               </button>
             </div>
@@ -161,7 +169,7 @@ export default function AdminLayout() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="p-6">
+        <div className={`p-6 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>
           <Outlet />
         </div>
       </div>

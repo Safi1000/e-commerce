@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: ["./src/**/*.{js,jsx,ts,tsx}", "*.{js,ts,jsx,tsx,mdx}", "app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
   theme: {
     extend: {
@@ -38,6 +38,18 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        theme: {
+          light: {
+            primary: "#ffffff",
+            secondary: "#f3f4f6",
+            accent: "#f9fafb"
+          },
+          dark: {
+            primary: "#000000",
+            secondary: "#111827",
+            accent: "#1f2937"
+          }
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

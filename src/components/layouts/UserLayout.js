@@ -5,10 +5,13 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
 import { ShoppingBag, Search, User, LogOut, Menu, X, ChevronDown, Home, ShoppingCart, Settings } from "lucide-react"
+import ThemeToggle from "../ThemeToggle"
+import { useTheme } from "../../contexts/ThemeContext"
 
 export default function UserLayout({ children }) {
   const { currentUser, logout, userRole, isAdmin } = useAuth()
   const { itemCount } = useCart()
+  const { theme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -76,16 +79,16 @@ export default function UserLayout({ children }) {
   }, [location.pathname, location.search])
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className={`min-h-screen flex flex-col theme-transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-gray-900"}`}>
       {/* Header */}
-      <header className="bg-gray-800 border-b border-white-800 sticky top-0 z-50">
+      <header className={`${theme === "dark" ? "bg-gray-800 border-b border-white-800" : "bg-white border-b border-gray-200"} sticky top-0 z-50 theme-transition`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="text-2xl font-bold text-white flex items-center font-poppins">
-              <ShoppingBag className="h-7 w-7 mr-2 text-white" />
+            <Link to="/" className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"} flex items-center font-poppins theme-transition`}>
+              <ShoppingBag className={`h-7 w-7 mr-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`} />
               <span>
-                SHOP<span className="text-gray-400">EASE</span>
+                SHOP<span className={theme === "dark" ? "text-gray-400" : "text-gray-500"}>EASE</span>
               </span>
             </Link>
 
@@ -94,13 +97,21 @@ export default function UserLayout({ children }) {
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full px-4 py-2 bg-black border border-gray-700 rounded-[12px] focus:outline-none focus:border-white transition-all text-white"
+                className={`w-full px-4 py-2 ${
+                  theme === "dark" 
+                    ? "bg-black border border-gray-700 text-white" 
+                    : "bg-gray-100 border border-gray-300 text-gray-900"
+                } rounded-[12px] focus:outline-none focus:border-blue-500 transition-all theme-transition`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
                 type="submit"
-                className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 transition-colors ml-2"
+                className={`${
+                  theme === "dark"
+                    ? "bg-white text-black"
+                    : "bg-gray-900 text-white"
+                } px-4 py-2 rounded-[12px] hover:opacity-90 transition-colors ml-2`}
               >
                 <Search className="h-5 w-5" />
               </button>
@@ -108,34 +119,42 @@ export default function UserLayout({ children }) {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/" className="text-gray-300 hover:text-white transition-colors font-medium font-inter">
+              <Link to="/" className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-medium font-inter`}>
                 Home
               </Link>
-              <Link to="/shop" className="text-gray-300 hover:text-white transition-colors font-medium font-inter">
+              <Link to="/shop" className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-medium font-inter`}>
                 Shop
               </Link>
               {currentUser && (
                 <Link
                   to="/cart"
-                  className="text-gray-300 hover:text-white transition-colors font-medium font-inter flex items-center"
+                  className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-medium font-inter flex items-center`}
                 >
                   Cart
                   {itemCount > 0 && (
-                    <span className="ml-2 bg-white text-black text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className={`ml-2 ${theme === "dark" ? "bg-white text-black" : "bg-gray-900 text-white"} text-xs rounded-full h-5 w-5 flex items-center justify-center`}>
                       {itemCount}
                     </span>
                   )}
                 </Link>
               )}
 
+              {/* Add Theme Toggle */}
+              <ThemeToggle />
+
               {currentUser ? (
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="flex items-center text-gray-300 hover:text-white transition-colors focus:outline-none"
+                    className={`flex items-center ${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} focus:outline-none`}
                   >
-                    <span className="mr-1 font-medium font-inter">{currentUser.displayName || "User"}</span>
-                    <ChevronDown className="h-4 w-4" />
+                    <div className={`h-8 w-8 rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} flex items-center justify-center text-sm font-medium mr-1`}>
+                      {currentUser.displayName?.charAt(0) || <User className="h-4 w-4" />}
+                    </div>
+                    <span className="font-medium font-inter">
+                      {currentUser.displayName?.split(" ")[0] || "Account"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 ml-1" />
                   </button>
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-[12px] shadow-lg py-1 z-10">
@@ -171,7 +190,11 @@ export default function UserLayout({ children }) {
               ) : (
                 <Link
                   to="/login"
-                  className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 transition-colors font-medium font-inter font-bold"
+                  className={`${
+                    theme === "dark" 
+                      ? "bg-white text-black hover:bg-gray-200" 
+                      : "bg-gray-900 text-white hover:bg-gray-800"
+                  } px-4 py-2 rounded-[12px] transition-colors font-medium font-inter`}
                 >
                   Sign in
                 </Link>
@@ -179,9 +202,14 @@ export default function UserLayout({ children }) {
             </nav>
 
             {/* Mobile menu button */}
-            <button className="md:hidden text-gray-300 focus:outline-none" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <div className="md:hidden flex items-center">
+              {/* Add Theme Toggle for mobile */}
+              <ThemeToggle />
+              
+              <button className={`ml-3 ${theme === "dark" ? "text-gray-300" : "text-gray-700"} focus:outline-none`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
 
           {/* Mobile menu */}
@@ -192,11 +220,19 @@ export default function UserLayout({ children }) {
                   <input
                     type="text"
                     placeholder="Search products..."
-                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-[12px] focus:outline-none focus:border-white text-white"
+                    className={`w-full px-4 py-2 ${
+                      theme === "dark" 
+                        ? "bg-black border border-gray-700 text-white" 
+                        : "bg-gray-100 border border-gray-300 text-gray-900"
+                    } rounded-[12px] focus:outline-none focus:border-blue-500 transition-all theme-transition`}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  <button type="submit" className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 ml-2">
+                  <button type="submit" className={`${
+                    theme === "dark"
+                      ? "bg-white text-black"
+                      : "bg-gray-900 text-white"
+                  } px-4 py-2 rounded-[12px] hover:opacity-90 transition-colors ml-2`}>
                     <Search className="h-5 w-5" />
                   </button>
                 </div>
@@ -204,7 +240,7 @@ export default function UserLayout({ children }) {
               <div className="flex flex-col space-y-4">
                 <Link
                   to="/"
-                  className="text-gray-300 hover:text-white py-2 font-inter flex items-center gap-2"
+                  className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Home className="h-5 w-5" />
@@ -212,7 +248,7 @@ export default function UserLayout({ children }) {
                 </Link>
                 <Link
                   to="/shop"
-                  className="text-gray-300 hover:text-white py-2 font-inter flex items-center gap-2"
+                  className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <ShoppingBag className="h-5 w-5" />
@@ -221,13 +257,13 @@ export default function UserLayout({ children }) {
                 {currentUser && (
                   <Link
                     to="/cart"
-                    className="text-gray-300 hover:text-white py-2 font-inter flex items-center gap-2"
+                    className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <ShoppingCart className="h-5 w-5" />
                     <span>Cart</span>
                     {itemCount > 0 && (
-                      <span className="ml-2 bg-white text-black text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className={`ml-2 ${theme === "dark" ? "bg-white text-black" : "bg-gray-900 text-white"} text-xs rounded-full h-5 w-5 flex items-center justify-center`}>
                         {itemCount}
                       </span>
                     )}
@@ -237,7 +273,7 @@ export default function UserLayout({ children }) {
                   <>
                     <Link
                       to="/profile"
-                      className="text-gray-300 hover:text-white py-2 font-inter flex items-center gap-2"
+                      className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <User className="h-5 w-5" />
@@ -246,7 +282,7 @@ export default function UserLayout({ children }) {
                     {isAdmin && (
                       <Link
                         to="/admin"
-                        className="text-gray-300 hover:text-white py-2 font-inter flex items-center gap-2"
+                        className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <Settings className="h-5 w-5" />
@@ -258,7 +294,7 @@ export default function UserLayout({ children }) {
                         handleLogout()
                         setIsMenuOpen(false)
                       }}
-                      className="text-left text-gray-300 hover:text-white py-2 font-inter flex items-center gap-2"
+                      className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} text-left text-sm font-inter flex items-center gap-2`}
                     >
                       <LogOut className="h-5 w-5" />
                       Sign out
@@ -267,7 +303,11 @@ export default function UserLayout({ children }) {
                 ) : (
                   <Link
                     to="/login"
-                    className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 inline-block font-inter"
+                    className={`${
+                      theme === "dark" 
+                        ? "bg-white text-black hover:bg-gray-200" 
+                        : "bg-gray-900 text-white hover:bg-gray-800"
+                    } px-4 py-2 rounded-[12px] transition-colors font-inter`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Sign in
@@ -283,14 +323,14 @@ export default function UserLayout({ children }) {
       <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 border-t border-gray-800 text-white py-12">
+      <footer className={`${theme === "dark" ? "bg-gray-900 border-t border-gray-800 text-white" : "bg-gray-100 border-t border-gray-200 text-gray-900"} py-12 theme-transition`}>
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4 flex items-center font-poppins">
                 <ShoppingBag className="h-6 w-6 mr-2" />
                 <span>
-                  SHOP<span className="text-gray-400">EASE</span>
+                  SHOP<span className={theme === "dark" ? "text-gray-400" : "text-gray-500"}>EASE</span>
                 </span>
               </h3>
               <p className="text-gray-400 font-inter">Your one-stop shop for all your needs.</p>
@@ -301,8 +341,7 @@ export default function UserLayout({ children }) {
                 <li>
                   <Link
                     to="/"
-                    className="text-gray-400 hover:text-white transition-colors font-inter flex items-center gap-2"
-                  >
+                    className={`${theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-inter flex items-center gap-2`}>
                     <Home className="h-4 w-4" />
                     Home
                   </Link>
@@ -310,8 +349,7 @@ export default function UserLayout({ children }) {
                 <li>
                   <Link
                     to="/shop"
-                    className="text-gray-400 hover:text-white transition-colors font-inter flex items-center gap-2"
-                  >
+                    className={`${theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-inter flex items-center gap-2`}>
                     <ShoppingBag className="h-4 w-4" />
                     Shop
                   </Link>
@@ -319,8 +357,7 @@ export default function UserLayout({ children }) {
                 <li>
                   <Link
                     to="/cart"
-                    className="text-gray-400 hover:text-white transition-colors font-inter flex items-center gap-2"
-                  >
+                    className={`${theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-inter flex items-center gap-2`}>
                     <ShoppingCart className="h-4 w-4" />
                     Cart
                   </Link>

@@ -33,96 +33,46 @@ import Profile from "./pages/user/Profile"
 // Context
 import { AuthProvider } from "./contexts/AuthContext"
 import { CartProvider } from "./contexts/CartContext"
+import { ThemeProvider } from "./contexts/ThemeContext"
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route
-              path="/"
-              element={
-                <UserLayout>
-                  <Home />
-                </UserLayout>
-              }
-            />
-            <Route
-              path="/shop"
-              element={
-                <UserLayout>
-                  <Shop />
-                </UserLayout>
-              }
-            />
-            <Route
-              path="/product/:id"
-              element={
-                <UserLayout>
-                  <ProductDetail />
-                </UserLayout>
-              }
-            />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+    <Router>
+      <AuthProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-            {/* Protected User Routes */}
-            <Route
-              path="/cart"
-              element={
-                <UserLayout>
-                  <Cart />
-                </UserLayout>
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <PrivateRoute>
-                  <UserLayout>
-                    <Checkout />
-                  </UserLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <UserLayout>
-                    <Profile />
-                  </UserLayout>
-                </PrivateRoute>
-              }
-            />
+              {/* User Routes */}
+              <Route path="/" element={<UserLayout><Home /></UserLayout>} />
+              <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
+              <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
+              <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
+              <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
+              <Route path="/profile" element={<UserLayout><Profile /></UserLayout>} />
 
-            {/* Admin Routes */}
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminLayout />
-                </AdminRoute>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="products" element={<ProductList />} />
-              <Route path="products/add" element={<AddProduct />} />
-              <Route path="products/edit/:id" element={<EditProduct />} />
-              <Route path="categories" element={<CategoryList />} />
-              <Route path="categories/add" element={<AddCategory />} />
-              <Route path="categories/edit/:id" element={<EditCategory />} />
-              <Route path="orders" element={<OrderList />} />
-            </Route>
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<ProductList />} />
+                <Route path="products/add" element={<AddProduct />} />
+                <Route path="products/edit/:id" element={<EditProduct />} />
+                <Route path="categories" element={<CategoryList />} />
+                <Route path="categories/add" element={<AddCategory />} />
+                <Route path="categories/edit/:id" element={<EditCategory />} />
+                <Route path="orders" element={<OrderList />} />
+              </Route>
 
-            {/* Fallback Route */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+              {/* Catch All */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ThemeProvider>
+        </CartProvider>
+      </AuthProvider>
+    </Router>
   )
 }
 

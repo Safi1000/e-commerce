@@ -144,8 +144,32 @@ export default function Shop() {
   }
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value) // Only update input value
-  }
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Update URL in real-time as user types
+    const params = new URLSearchParams(location.search);
+    
+    if (value.trim()) {
+      params.set("search", value.trim());
+    } else {
+      params.delete("search");
+    }
+    
+    // Preserve other parameters
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (priceRange.min) params.set("minPrice", priceRange.min);
+    if (priceRange.max) params.set("maxPrice", priceRange.max);
+    
+    // Update URL and trigger filter through URL effect
+    navigate(
+      {
+        pathname: "/shop",
+        search: params.toString(),
+      },
+      { replace: true },
+    );
+  };
 
   const handleCategoryChange = (e) => {
     const category = e.target.value
@@ -308,6 +332,23 @@ export default function Shop() {
               </div>
 
               <div className="space-y-8">
+                {/* Real-time search input */}
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">SEARCH PRODUCTS</h4>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      placeholder="Search..."
+                      className="bg-black border border-gray-800 w-full py-2 px-3 pr-10 rounded-[12px] text-white text-sm focus:outline-none focus:border-gray-600"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Search size={16} className="text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">CATEGORIES</h4>
                   <div className="space-y-2">

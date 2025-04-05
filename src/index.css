@@ -2,16 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Common variables */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-mono: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+
+  /* Light theme variables */
+  --light-bg-primary: #f9fafb;
+  --light-bg-secondary: #ffffff;
+  --light-bg-accent: #f3f4f6;
+  --light-text-primary: #111827;
+  --light-text-secondary: #4b5563;
+  --light-text-accent: #6b7280;
+  --light-border-primary: #e5e7eb;
+  --light-border-secondary: #d1d5db;
+  --light-button-primary: #111827;
+  --light-button-secondary: #4b5563;
+  --light-button-hover: #374151;
+  --light-input-bg: #ffffff;
+  
+  /* Dark theme variables */
+  --dark-bg-primary: #000000;
+  --dark-bg-secondary: #111827;
+  --dark-bg-accent: #1f2937;
+  --dark-text-primary: #ffffff;
+  --dark-text-secondary: #e5e7eb;
+  --dark-text-accent: #9ca3af;
+  --dark-border-primary: #374151;
+  --dark-border-secondary: #4b5563;
+  --dark-button-primary: #ffffff;
+  --dark-button-secondary: #e5e7eb;
+  --dark-button-hover: #d1d5db;
+  --dark-input-bg: #111827;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
-    "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
+}
+
+body.dark-theme {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+}
+
+body.light-theme {
+  background-color: var(--light-bg-primary);
+  color: var(--light-text-primary);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: var(--font-mono);
+}
+
+/* Theme-specific class utilities */
+.dark-theme .bg-theme-primary { background-color: var(--dark-bg-primary); }
+.dark-theme .bg-theme-secondary { background-color: var(--dark-bg-secondary); }
+.dark-theme .bg-theme-accent { background-color: var(--dark-bg-accent); }
+.dark-theme .text-theme-primary { color: var(--dark-text-primary); }
+.dark-theme .text-theme-secondary { color: var(--dark-text-secondary); }
+.dark-theme .text-theme-accent { color: var(--dark-text-accent); }
+.dark-theme .border-theme-primary { border-color: var(--dark-border-primary); }
+.dark-theme .border-theme-secondary { border-color: var(--dark-border-secondary); }
+
+.light-theme .bg-theme-primary { background-color: var(--light-bg-primary); }
+.light-theme .bg-theme-secondary { background-color: var(--light-bg-secondary); }
+.light-theme .bg-theme-accent { background-color: var(--light-bg-accent); }
+.light-theme .text-theme-primary { color: var(--light-text-primary); }
+.light-theme .text-theme-secondary { color: var(--light-text-secondary); }
+.light-theme .text-theme-accent { color: var(--light-text-accent); }
+.light-theme .border-theme-primary { border-color: var(--light-border-primary); }
+.light-theme .border-theme-secondary { border-color: var(--light-border-secondary); }
+
+/* Transition for theme changes */
+.theme-transition {
+  transition-property: background-color, color, border-color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
 }
 
