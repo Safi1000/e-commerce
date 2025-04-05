@@ -4,12 +4,23 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { collection, addDoc } from "firebase/firestore"
 import { db } from "../../../firebase/config"
+import Toast from "../../../components/layouts/Toast"
 
 export default function AddCategory() {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const navigate = useNavigate()
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+  const [shouldNavigate, setShouldNavigate] = useState(false);
+
+  const handleCloseToast = () => {
+    setToast({ ...toast, visible: false });
+    if (shouldNavigate) {
+      navigate("/admin/categories");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -20,6 +31,7 @@ export default function AddCategory() {
     }
 
     setLoading(true)
+    setError('')
 
     try {
       await addDoc(collection(db, "categories"), {
@@ -28,18 +40,27 @@ export default function AddCategory() {
         createdAt: new Date().toISOString(),
       })
 
-      alert("Category added successfully")
-      navigate("/admin/categories")
+      // Show success toast and set navigation flag
+      setShouldNavigate(true);
+      setToast({
+        visible: true,
+        message: 'Category added successfully!',
+        type: 'success'
+      });
     } catch (error) {
       console.error("Error adding category:", error)
-      alert("Failed to add category")
+      setToast({
+        visible: true,
+        message: 'Error adding category. Please try again.',
+        type: 'error'
+      });
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div>
+    <div className="bg-white text-black min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Add Category</h1>
 
       <div className="bg-white rounded-lg shadow p-6">
@@ -91,6 +112,13 @@ export default function AddCategory() {
           </div>
         </form>
       </div>
+
+      <Toast
+        isVisible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onClose={handleCloseToast}
+      />
     </div>
   )
 }
