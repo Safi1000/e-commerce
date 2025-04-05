@@ -171,7 +171,7 @@ export default function UserLayout({ children }) {
               ) : (
                 <Link
                   to="/login"
-                  className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 transition-colors font-medium font-inter"
+                  className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 transition-colors font-medium font-inter font-bold"
                 >
                   Sign in
                 </Link>

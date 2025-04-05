@@ -293,9 +293,9 @@ export default function ProductDetail() {
                 ) : (
                   <Link
                     to="/login"
-                    className="inline-block bg-white text-black py-3 px-6 rounded-[12px] hover:bg-gray-200 transition-colors text-center w-full"
+                    className="inline-block bg-white text-black py-3 px-6 rounded-[12px] hover:bg-gray-200 transition-colors text-center w-full font-inter font-bold"
                   >
-                    Sign in to Purchase
+                    Sign in to Buy
                   </Link>
                 )}
               </div>

@@ -457,7 +457,7 @@ export default function Shop() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <motion.div
                     key={product.id}
@@ -466,34 +466,34 @@ export default function Shop() {
                     transition={{ duration: 0.3 }}
                     className="bg-gray-900 border border-gray-800 rounded-[12px] overflow-hidden hover:border-gray-700 transition-colors"
                   >
-                    <div className="h-52 bg-black relative overflow-hidden">
+                    <div className="h-64 bg-black relative overflow-hidden">
                       <img
                         src={product.imageUrl || getPlaceholderImage(400, 300)}
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     </div>
-                    <div className="p-4">
-                      <h3 className="text-white font-medium text-lg mb-1 font-inter">{product.name}</h3>
-                      <p className="text-gray-400 text-sm mb-2 font-inter">{product.category}</p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-white font-bold font-inter">${product.price?.toFixed(2) || "0.00"}</span>
+                    <div className="p-5">
+                      <h3 className="text-white font-medium text-lg mb-2 font-inter">{product.name}</h3>
+                      <p className="text-gray-400 text-sm mb-3 font-inter">{product.category}</p>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-white text-xl font-bold font-inter">${product.price?.toFixed(2) || "0.00"}</span>
                       </div>
                     </div>
                     
-                    <div className="px-4 pb-4 space-y-2">
+                    <div className="px-5 pb-5 space-y-3">
                       <Link
                         to={`/product/${product.id}`}
-                        className="w-full bg-transparent border border-white text-white px-4 py-2 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
+                        className="w-full bg-transparent border border-white text-white px-4 py-3 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
                       >
                         View Details
                         <ChevronRight size={16} />
                       </Link>
                       
-                      {currentUser && (
+                      {currentUser ? (
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className={`w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 ${
+                          className={`w-full py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 ${
                             addedToCart === product.id
                               ? "bg-green-900 text-white border border-green-500"
                               : "bg-white text-black hover:bg-gray-200"
@@ -510,6 +510,14 @@ export default function Shop() {
                             </>
                           )}
                         </button>
+                      ) : (
+                        <Link
+                          to="/login"
+                          className="w-full bg-gray-800 text-gray-300 px-4 py-3 rounded-[12px] hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                        >
+                          Sign in to add to cart
+                          <ChevronRight size={16} />
+                        </Link>
                       )}
                     </div>
                   </motion.div>
