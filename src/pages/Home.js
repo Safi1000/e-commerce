@@ -232,7 +232,7 @@ export default function Home() {
                       ) : (
                         <Link
                           to="/login"
-                          className="w-full bg-gray-800 text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                          className="w-full bg-gray-800 text-gray-300 px-4 py-2 rounded-[12px] hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
                         >
                           Sign in to add to cart
                           <ChevronRight size={16} />
