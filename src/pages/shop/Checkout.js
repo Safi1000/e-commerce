@@ -260,7 +260,7 @@ export default function Checkout() {
             </div>
           </motion.div>
 
-          {error && <div className="bg-red-900 text-white p-4 mb-6 rounded-sm">{error}</div>}
+          {error && <div className="bg-red-900 text-white p-4 mb-6 rounded-[12px]">{error}</div>}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <motion.div
@@ -269,7 +269,7 @@ export default function Checkout() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="bg-gray-900 border border-gray-800 rounded-sm p-6">
+              <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6">
                 <div className="flex items-center mb-6">
                   <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center mr-4">
                     <ShoppingBag className="h-5 w-5 text-white" />
@@ -292,7 +292,7 @@ export default function Checkout() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -307,7 +307,7 @@ export default function Checkout() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -322,7 +322,7 @@ export default function Checkout() {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -337,7 +337,7 @@ export default function Checkout() {
                         name="address"
                         value={formData.address}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -352,7 +352,7 @@ export default function Checkout() {
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -367,7 +367,7 @@ export default function Checkout() {
                         name="state"
                         value={formData.state}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -382,7 +382,7 @@ export default function Checkout() {
                         name="zipCode"
                         value={formData.zipCode}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -396,7 +396,7 @@ export default function Checkout() {
                         name="country"
                         value={formData.country}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       >
                         <option value="United States">United States</option>
@@ -425,7 +425,7 @@ export default function Checkout() {
                         name="cardName"
                         value={formData.cardName}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -441,7 +441,7 @@ export default function Checkout() {
                         value={formData.cardNumber}
                         onChange={handleChange}
                         placeholder="XXXX XXXX XXXX XXXX"
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -457,7 +457,7 @@ export default function Checkout() {
                         value={formData.expMonth}
                         onChange={handleChange}
                         placeholder="MM"
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -473,7 +473,7 @@ export default function Checkout() {
                         value={formData.expYear}
                         onChange={handleChange}
                         placeholder="YYYY"
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -489,7 +489,7 @@ export default function Checkout() {
                         value={formData.cvv}
                         onChange={handleChange}
                         placeholder="XXX"
-                        className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                         required
                       />
                     </div>
@@ -498,7 +498,7 @@ export default function Checkout() {
                   <div className="flex justify-between mt-8">
                     <Link
                       to="/cart"
-                      className="bg-transparent border border-white text-white py-2 px-6 rounded-sm hover:bg-white hover:text-black transition-colors flex items-center gap-2 font-inter"
+                      className="bg-transparent border border-white text-white py-2 px-6 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center gap-2 font-inter"
                     >
                       <ChevronLeft size={18} />
                       Back to Cart
@@ -507,7 +507,7 @@ export default function Checkout() {
                     <button
                       type="button" 
                       disabled={loading}
-                      className="bg-white text-black py-2 px-6 rounded-sm hover:bg-gray-200 transition-colors flex items-center gap-2 font-inter"
+                      className="bg-white text-black py-2 px-6 rounded-[12px] hover:bg-gray-200 transition-colors flex items-center gap-2 font-inter"
                       onClick={(e) => {
                         if (!loading) {
                           e.preventDefault();
@@ -541,13 +541,13 @@ export default function Checkout() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="bg-gray-900 border border-gray-800 rounded-sm p-6">
+              <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6">
                 <h2 className="text-xl font-bold mb-6 font-poppins">ORDER SUMMARY</h2>
 
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex items-center">
-                      <div className="h-12 w-12 flex-shrink-0 bg-black rounded-sm overflow-hidden">
+                      <div className="h-12 w-12 flex-shrink-0 bg-black rounded-[12px] overflow-hidden">
                         <img
                           className="h-12 w-12 object-cover"
                           src={item.imageUrl || getPlaceholderImage(80, 80)}

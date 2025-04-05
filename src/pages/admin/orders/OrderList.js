@@ -136,7 +136,7 @@ export default function OrderList() {
       <h1 className="text-2xl font-bold mb-6">Order Management</h1>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white rounded-[12px] shadow p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">Filters</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -144,7 +144,7 @@ export default function OrderList() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="all">All Statuses</option>
               {statusOptions.map((option) => (
@@ -161,7 +161,7 @@ export default function OrderList() {
               type="date"
               value={dateRange.start}
               onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
 
@@ -171,7 +171,7 @@ export default function OrderList() {
               type="date"
               value={dateRange.end}
               onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function OrderList() {
         <div className="mt-4 flex justify-end">
           <button
             onClick={clearFilters}
-            className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+            className="bg-gray-200 text-gray-800 py-2 px-4 rounded-[12px] hover:bg-gray-300 transition-colors"
           >
             Clear Filters
           </button>
@@ -187,7 +187,7 @@ export default function OrderList() {
       </div>
 
       {/* Orders List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-[12px] shadow overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
@@ -247,7 +247,7 @@ export default function OrderList() {
                             e.stopPropagation()
                             handleStatusChange(order.id, e.target.value)
                           }}
-                          className="border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="border border-gray-300 rounded-[12px] shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {statusOptions.map((option) => (

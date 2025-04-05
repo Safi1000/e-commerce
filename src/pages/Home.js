@@ -140,16 +140,14 @@ export default function Home() {
               </p>
               <Link
                 to="/shop"
-                className="group bg-white text-black px-8 py-4 rounded-sm hover:bg-gray-200 inline-flex items-center transition-all duration-300 font-sans font-bold"
+                className="group bg-white text-black px-8 py-4 rounded-[12px]   hover:bg-gray-200 inline-flex items-center transition-all duration-300 font-sans font-bold"
               >
                 Shop Now
                 <ChevronRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
             <motion.div variants={fadeIn} className="flex justify-center">
-              <div className="bg-gray-800 rounded-sm p-2 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-              
-              </div>
+
             </motion.div>
           </motion.div>
         </div>
@@ -187,96 +185,61 @@ export default function Home() {
                 <motion.div
                   key={product.id}
                   variants={fadeIn}
-                  className="bg-black border border-gray-800 rounded-sm overflow-hidden hover:border-gray-600 duration-300 group w-150"
+                  className="bg-black border border-gray-800 rounded-[12px] overflow-hidden hover:border-gray-600 duration-300 group"
                 >
-                 
-                 <div className="rounded-lg overflow-hidden shadow-lg flex flex-col duration-300 hover:shadow-xl border border-gray-100 group">
-  {/* Product Image */}
-  <div className="h-48 overflow-hidden bg-gray-200 relative">
-    {product.imageUrl ? (
-      <img 
-        src={product.imageUrl} 
-        alt={product.name} 
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-      />
-    ) : (
-      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-        <span className="text-gray-400 text-sm">No image available</span>
-      </div>
-    )}
-  </div>
-
-
-      
-      {/* Product Info */}
-      <div className="p-6 flex flex-col flex-grow">
-        <h3 className="text-lg font-bold mb-2 tracking-tight truncate">
-          {product.name}
-        </h3>
-        <p className="text-gray-400 mb-4 line-clamp-2 text-xs min-h-[40px]">
-          {product.description || "No description available"}
-        </p>
-        
-        <div className="mt-auto pt-4 border-t border-gray-100">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-bold">
-              ${product.price?.toFixed(2) || "0.00"}
-            </span>
-            
-            <div className="flex gap-2">
-              <Link
-                to={`/product/${product.id}`}
-                className="
-                  bg-transparent border border-white text-white 
-                  px-4 py-2 rounded-md text-xs shadow-md 
-                  hover:scale-105  duration-300
-                  flex items-center justify-center min-w-[80px]
-                "
-              >
-                Details
-              </Link>
-              
-              {currentUser ? (
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  className={`
-                    px-4 py-2 rounded-md text-xs shadow-md transition-all duration-300 
-                    hover:scale-105 min-w-[100px] flex items-center justify-center
-                    ${addedToCart === product.id 
-                      ? "bg-green-600 text-white" 
-                      : "bg-white text-black hover:bg-gray-200"}
-                  `}
-                  disabled={addedToCart === product.id}
-                >
-                  {addedToCart === product.id ? (
-                    <span className="flex items-center">
-                      <Check className="h-3 w-3 mr-1" />
-                      Added
-                    </span>
-                  ) : (
-                    "Add to Cart"
-                  )}
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  className="
-                    bg-transparent border border-white text-white 
-                    px-4 py-2 text-xs font-medium rounded-md shadow-md 
-                    hover:scale-105 transition-transform duration-300
-                    flex items-center justify-center min-w-[140px]
-                  "
-                >
-                  Sign in to add
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
+                  <div className="h-48 overflow-hidden">
+                    <Link to={`/product/${product.id}`}>
+                      <img
+                        src={product.imageUrl || getPlaceholderImage(400, 300)}
+                        alt={product.name}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 tracking-tight font-poppins">{product.name}</h3>
+                    <p className="text-2xl font-bold mb-4 text-white">${product.price.toFixed(2)}</p>
+                    <div className="flex flex-col space-y-3">
+                      <Link
+                        to={`/product/${product.id}`}
+                        className="w-full bg-transparent border border-white text-white px-4 py-2 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
+                      >
+                        View Details
+                        <ChevronRight size={16} />
+                      </Link>
+                      {currentUser ? (
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className={`w-full px-4 py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter ${
+                            addedToCart === product.id
+                              ? "bg-green-600 text-white"
+                              : "bg-white text-black hover:bg-gray-200"
+                          }`}
+                          disabled={addedToCart === product.id}
+                        >
+                          {addedToCart === product.id ? (
+                            <>
+                              Added to Cart
+                              <Check size={16} />
+                            </>
+                          ) : (
+                            <>
+                              Add to Cart
+                              <ShoppingBag size={16} />
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <Link
+                          to="/login"
+                          className="w-full bg-gray-800 text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                        >
+                          Sign in to add to cart
+                          <ChevronRight size={16} />
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -291,7 +254,7 @@ export default function Home() {
           >
             <Link
               to="/shop"
-              className="group bg-transparent border-2 border-white text-white px-8 py-3 rounded-sm font-medium hover:bg-white hover:text-black inline-flex items-center transition-all duration-300"
+              className="group bg-transparent border-2 border-white text-white px-8 py-3 rounded-[12px] font-medium hover:bg-white hover:text-black inline-flex items-center transition-all duration-300"
             >
               View All Products
               <ChevronRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
@@ -326,18 +289,13 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={staggerContainer}
-              className="
-              grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
-              gap-10 sm:gap-12 md:gap-14 lg:gap-16 
-              w-full max-w-screen-xl mx-auto
-            "
-            
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
             >
               {categories.map((category) => (
                 <motion.div key={category.id} variants={fadeIn}>
                   <Link
                     to={`/shop?category=${category.id}`}
-                    className="bg-gray-900 border border-gray-800 rounded-sm p-8 text-center block hover:border-gray-600 transition-all duration-300 group"
+                    className="bg-gray-900 border border-gray-800 rounded-[12px] p-8 text-center block hover:border-gray-600 transition-all duration-300 group"
                   >
                     <div className="h-16 w-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                       <Layers className="h-8 w-8 text-white" />
@@ -370,52 +328,85 @@ export default function Home() {
             <div className="w-24 h-1 bg-white mx-auto"></div>
           </motion.div>
 
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
             <motion.div
               variants={fadeIn}
-              className="bg-black border border-gray-800 rounded-sm p-8 text-center hover:border-gray-600 transition-all duration-300 group"
+              className="bg-gray-900 border border-gray-800 p-6 rounded-[12px] hover:border-gray-600 transition-colors"
             >
-              <div className="h-20 w-20 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Clock className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 tracking-tight font-poppins">FAST DELIVERY</h3>
-              <p className="text-gray-400 font-inter">
-                Get your orders delivered quickly to your doorstep with our premium shipping service.
-              </p>
+              <ShoppingBag className="h-12 w-12 mb-4 text-white" />
+              <h3 className="text-xl font-bold mb-2 font-poppins">Premium Quality</h3>
+              <p className="text-gray-400 font-inter">Handpicked products with exceptional quality and design.</p>
             </motion.div>
 
             <motion.div
               variants={fadeIn}
-              className="bg-black border border-gray-800 rounded-sm p-8 text-center hover:border-gray-600 transition-all duration-300 group"
+              className="bg-gray-900 border border-gray-800 p-6 rounded-[12px] hover:border-gray-600 transition-colors"
             >
-              <div className="h-20 w-20 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Shield className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 tracking-tight font-poppins">SECURE PAYMENTS</h3>
-              <p className="text-gray-400 font-inter">
-                All transactions are processed securely with military-grade encryption for your peace of mind.
-              </p>
+              <Clock className="h-12 w-12 mb-4 text-white" />
+              <h3 className="text-xl font-bold mb-2 font-poppins">Fast Delivery</h3>
+              <p className="text-gray-400 font-inter">Get your products delivered quickly and reliably.</p>
             </motion.div>
 
             <motion.div
               variants={fadeIn}
-              className="bg-black border border-gray-800 rounded-sm p-8 text-center hover:border-gray-600 transition-all duration-300 group"
+              className="bg-gray-900 border border-gray-800 p-6 rounded-[12px] hover:border-gray-600 transition-colors"
             >
-              <div className="h-20 w-20 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <ShoppingBag className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 tracking-tight font-poppins">WIDE SELECTION</h3>
-              <p className="text-gray-400 font-inter">
-                Browse through thousands of premium products across multiple categories.
-              </p>
+              <Shield className="h-12 w-12 mb-4 text-white" />
+              <h3 className="text-xl font-bold mb-2 font-poppins">Secure Payments</h3>
+              <p className="text-gray-400 font-inter">Your transactions are protected with top security measures.</p>
             </motion.div>
-          </motion.div>
+
+            <motion.div
+              variants={fadeIn}
+              className="bg-gray-900 border border-gray-800 p-6 rounded-[12px] hover:border-gray-600 transition-colors"
+            >
+              <Layers className="h-12 w-12 mb-4 text-white" />
+              <h3 className="text-xl font-bold mb-2 font-poppins">Easy Returns</h3>
+              <p className="text-gray-400 font-inter">Not satisfied? Return your products hassle-free.</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="bg-black text-white py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+            >
+              <motion.h2 
+                variants={fadeIn} 
+                className="text-3xl md:text-4xl font-bold mb-6 font-poppins"
+              >
+                Subscribe to Our Newsletter
+              </motion.h2>
+              <motion.p 
+                variants={fadeIn} 
+                className="text-gray-400 mb-8 font-inter"
+              >
+                Stay updated with our latest products, promotions, and design inspiration delivered straight to your inbox.
+              </motion.p>
+              <motion.div variants={fadeIn}>
+                <form className="flex flex-col md:flex-row items-stretch gap-3 mt-6">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="bg-black border border-gray-800 px-4 py-3 rounded-[12px] focus:outline-none focus:border-white text-white flex-grow"
+                  />
+                  <button
+                    className="bg-white text-black px-6 py-3 rounded-[12px] hover:bg-gray-200 transition-colors inline-flex items-center gap-2 whitespace-nowrap"
+                  >
+                    Subscribe
+                    <ChevronRight size={16} />
+                  </button>
+                </form>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>

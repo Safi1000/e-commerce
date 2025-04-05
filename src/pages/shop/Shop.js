@@ -270,7 +270,7 @@ export default function Shop() {
           <div className="lg:hidden mb-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full bg-gray-900 border border-gray-800 text-white py-3 px-4 rounded-sm flex items-center justify-center gap-2"
+              className="w-full bg-gray-900 border border-gray-800 text-white py-3 px-4 rounded-[12px] flex items-center justify-center gap-2"
             >
               {showFilters ? (
                 <>
@@ -293,111 +293,142 @@ export default function Shop() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4 font-poppins">SEARCH</h2>
-              <form onSubmit={handleSearchSubmit} className="space-y-2">
-                <div className="hidden md:flex items-center flex-1 max-w-md ">
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-sm focus:outline-none focus:border-white transition-all text-white"
-                  />
+            <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6 sticky top-20">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-white font-poppins">FILTERS</h3>
+                {(selectedCategory || searchTerm || priceRange.min || priceRange.max) && (
                   <button
-                    type="submit"
-                    className="bg-white text-black px-4 py-2 rounded-sm hover:bg-gray-200 transition-colors "
+                    onClick={clearFilters}
+                    className="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"
                   >
-                    <Search size={18} />
+                    Clear All
+                    <X size={14} />
                   </button>
-                </div>
-              </form>
-            </div>
-
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4 font-poppins">CATEGORIES</h2>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="all-categories"
-                    name="category"
-                    value=""
-                    checked={selectedCategory === ""}
-                    onChange={handleCategoryChange}
-                    className="h-4 w-4 text-white focus:ring-white border-gray-700 bg-black"
-                  />
-                  <label htmlFor="all-categories" className="ml-2 text-gray-300 font-inter">
-                    All Categories
-                  </label>
-                </div>
-
-                {categories.map((category) => (
-                  <div key={category.id} className="flex items-center">
-                    <input
-                      type="radio"
-                      id={`category-${category.id}`}
-                      name="category"
-                      value={category.id}
-                      checked={selectedCategory === category.id}
-                      onChange={handleCategoryChange}
-                      className="h-4 w-4 text-white focus:ring-white border-gray-700 bg-black"
-                    />
-                    <label htmlFor={`category-${category.id}`} className="ml-2 text-gray-300 font-inter">
-                      {category.name}
-                    </label>
-                  </div>
-                ))}
+                )}
               </div>
-            </div>
 
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4 font-poppins">PRICE RANGE</h2>
-              <Slider
-                value={[priceRange.min || 0, priceRange.max || 1000]}
-                onChange={handleSliderChange}
-                valueLabelDisplay="auto"
-                min={0}
-                max={1000}
-                sx={{ color: 'white' }}
-              />
-              <div className="space-y-4">
+              <div className="space-y-8">
                 <div>
-                  <label htmlFor="min" className="block text-sm text-gray-300 mb-1 font-inter">
-                    Min Price
-                  </label>
-                  <input
-                    type="number"
-                    id="min"
-                    name="min"
-                    min="0"
-                    value={priceRange.min}
-                    onChange={handlePriceChange}
-                    className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
-                  />
+                  <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">CATEGORIES</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="all-categories"
+                        name="category"
+                        value=""
+                        checked={selectedCategory === ""}
+                        onChange={handleCategoryChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="all-categories"
+                        className={`flex items-center cursor-pointer text-sm ${
+                          selectedCategory === "" ? "text-white" : "text-gray-400"
+                        }`}
+                      >
+                        <span
+                          className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
+                            selectedCategory === "" ? "border-white bg-white text-black" : "border-gray-600"
+                          }`}
+                        >
+                          {selectedCategory === "" && <Check size={12} />}
+                        </span>
+                        All Categories
+                      </label>
+                    </div>
+
+                    {categories.map((category) => (
+                      <div key={category.id} className="flex items-center">
+                        <input
+                          type="radio"
+                          id={category.id}
+                          name="category"
+                          value={category.id}
+                          checked={selectedCategory === category.id}
+                          onChange={handleCategoryChange}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor={category.id}
+                          className={`flex items-center cursor-pointer text-sm ${
+                            selectedCategory === category.id ? "text-white" : "text-gray-400"
+                          }`}
+                        >
+                          <span
+                            className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
+                              selectedCategory === category.id ? "border-white bg-white text-black" : "border-gray-600"
+                            }`}
+                          >
+                            {selectedCategory === category.id && <Check size={12} />}
+                          </span>
+                          {category.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="max" className="block text-sm text-gray-300 mb-1 font-inter">
-                    Max Price
-                  </label>
-                  <input
-                    type="number"
-                    id="max"
-                    name="max"
-                    min="0"
-                    value={priceRange.max}
-                    onChange={handlePriceChange}
-                    className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
-                  />
+                  <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">PRICE RANGE</h4>
+                  <div>
+                    <Slider
+                      value={[
+                        parseFloat(priceRange.min) || 0,
+                        parseFloat(priceRange.max) || 1000
+                      ]}
+                      onChange={handleSliderChange}
+                      valueLabelDisplay="auto"
+                      min={0}
+                      max={1000}
+                      sx={{
+                        color: 'white',
+                        '& .MuiSlider-thumb': {
+                          height: 16,
+                          width: 16,
+                          backgroundColor: 'white',
+                        },
+                        '& .MuiSlider-track': {
+                          height: 2,
+                        },
+                        '& .MuiSlider-rail': {
+                          color: '#8D8D8D',
+                          height: 2,
+                        },
+                      }}
+                    />
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <label htmlFor="min" className="block text-xs text-gray-400 mb-1">
+                          Min Price
+                        </label>
+                        <input
+                          type="number"
+                          id="min"
+                          name="min"
+                          value={priceRange.min}
+                          onChange={handlePriceChange}
+                          className="bg-black border border-gray-800 w-full py-2 px-3 rounded-[12px] text-white text-sm focus:outline-none focus:border-gray-600"
+                          placeholder="$0"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="max" className="block text-xs text-gray-400 mb-1">
+                          Max Price
+                        </label>
+                        <input
+                          type="number"
+                          id="max"
+                          name="max"
+                          value={priceRange.max}
+                          onChange={handlePriceChange}
+                          className="bg-black border border-gray-800 w-full py-2 px-3 rounded-[12px] text-white text-sm focus:outline-none focus:border-gray-600"
+                          placeholder="$1000"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-
-                <button
-                  onClick={clearFilters}
-                  className="w-full bg-transparent border border-white text-white py-2 px-4 rounded-sm hover:bg-white hover:text-black transition-colors font-inter"
-                >
-                  Clear Filters
-                </button>
               </div>
             </div>
           </motion.div>
@@ -409,93 +440,81 @@ export default function Shop() {
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="bg-gray-900 border border-gray-800 rounded-sm p-8 text-center"
-              >
-                <div className="h-20 w-20 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Search className="h-10 w-10 text-gray-400" />
+              <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-12 text-center">
+                <div className="h-24 w-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                  <X className="h-12 w-12 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 font-poppins">NO PRODUCTS FOUND</h3>
-                <p className="text-gray-400 mb-6 font-inter">Try changing your filters or search term.</p>
+                <h3 className="text-2xl font-bold text-white mb-2 font-poppins">NO PRODUCTS FOUND</h3>
+                <p className="text-gray-400 mb-8 font-inter">
+                  Try adjusting your search or filter criteria.
+                </p>
                 <button
                   onClick={clearFilters}
-                  className="bg-white text-black py-2 px-6 rounded-sm hover:bg-gray-200 transition-colors font-inter"
+                  className="bg-white text-black py-3 px-8 rounded-[12px] hover:bg-gray-200 inline-flex items-center gap-2 transition-colors font-inter"
                 >
                   Clear Filters
+                  <X size={18} />
                 </button>
-              </motion.div>
+              </div>
             ) : (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={staggerContainer}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {filteredProducts.map((product) => (
                   <motion.div
                     key={product.id}
-                    variants={fadeIn}
-                    className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden hover:border-gray-600 transition-all duration-300 group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-gray-900 border border-gray-800 rounded-[12px] overflow-hidden hover:border-gray-700 transition-colors"
                   >
-<div className="h-48 overflow-hidden">
-  <Link to={`/product/${product.id}`}>
-    <img
-      src={product.imageUrl || getPlaceholderImage(400, 300)}
-      alt={product.name}
-      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-    />
-  </Link>
-</div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2 tracking-tight font-poppins">{product.name}</h3>
-                      <p className="text-2xl font-bold mb-4 text-white">${product.price}</p>
-                      <div className="flex flex-col space-y-3">
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="w-full bg-transparent border border-white text-white px-4 py-2 rounded-sm hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
-                        >
-                          View Details
-                          <ChevronRight size={16} />
-                        </Link>
-                        {currentUser ? (
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className={`w-full px-4 py-2 rounded-sm transition-colors flex items-center justify-center gap-2 font-inter ${
-                              addedToCart === product.id
-                                ? "bg-green-600 text-white"
-                                : "bg-white text-black hover:bg-gray-200"
-                            }`}
-                            disabled={addedToCart === product.id}
-                          >
-                            {addedToCart === product.id ? (
-                              <>
-                                Added to Cart
-                                <Check size={16} />
-                              </>
-                            ) : (
-                              <>
-                                Add to Cart
-                                <ShoppingBag size={16} />
-                              </>
-                            )}
-                          </button>
-                        ) : (
-                          <Link
-                            to="/login"
-                            className="w-full bg-gray-800 text-gray-300 px-4 py-2 rounded-sm hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
-                          >
-                            Sign in to add to cart
-                            <ChevronRight size={16} />
-                          </Link>
-                        )}
+                    <div className="h-52 bg-black relative overflow-hidden">
+                      <img
+                        src={product.imageUrl || getPlaceholderImage(400, 300)}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-white font-medium text-lg mb-1 font-inter">{product.name}</h3>
+                      <p className="text-gray-400 text-sm mb-2 font-inter">{product.category}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-white font-bold font-inter">${product.price?.toFixed(2) || "0.00"}</span>
                       </div>
+                    </div>
+                    
+                    <div className="px-4 pb-4 space-y-2">
+                      <Link
+                        to={`/product/${product.id}`}
+                        className="w-full bg-transparent border border-white text-white px-4 py-2 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
+                      >
+                        View Details
+                        <ChevronRight size={16} />
+                      </Link>
+                      
+                      {currentUser && (
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className={`w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 ${
+                            addedToCart === product.id
+                              ? "bg-green-900 text-white border border-green-500"
+                              : "bg-white text-black hover:bg-gray-200"
+                          }`}
+                          disabled={addedToCart === product.id}
+                        >
+                          {addedToCart === product.id ? (
+                            <>
+                              Added <Check size={16} />
+                            </>
+                          ) : (
+                            <>
+                              Add to Cart <ShoppingBag size={16} />
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
-              </motion.div>
+              </div>
             )}
           </div>
         </div>

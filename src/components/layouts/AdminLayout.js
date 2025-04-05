@@ -38,8 +38,8 @@ export default function AdminLayout() {
               !isActive("/admin/products") &&
               !isActive("/admin/categories") &&
               !isActive("/admin/orders")
-                ? "bg-blue-50 text-blue-600"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2"
+                : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
             }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +52,7 @@ export default function AdminLayout() {
           <Link
             to="/admin/products"
             className={`flex items-center px-4 py-3 ${
-              isActive("/admin/products") ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+              isActive("/admin/products") ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2" : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
             }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,8 +69,8 @@ export default function AdminLayout() {
             to="/admin/products/add"
             className={`flex items-center px-4 py-3 ${
               location.pathname === "/admin/products/add"
-                ? "bg-blue-50 text-blue-600"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2"
+                : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
             }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +83,7 @@ export default function AdminLayout() {
           <Link
             to="/admin/categories"
             className={`flex items-center px-4 py-3 ${
-              isActive("/admin/categories") ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+              isActive("/admin/categories") ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2" : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
             }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,8 +100,8 @@ export default function AdminLayout() {
             to="/admin/categories/add"
             className={`flex items-center px-4 py-3 ${
               location.pathname === "/admin/categories/add"
-                ? "bg-blue-50 text-blue-600"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2"
+                : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
             }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -115,7 +115,7 @@ export default function AdminLayout() {
           <Link
             to="/admin/orders"
             className={`flex items-center px-4 py-3 ${
-              isActive("/admin/orders") ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+              isActive("/admin/orders") ? "bg-blue-50 text-blue-600 rounded-[12px] ml-2 mr-2" : "text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2"
             }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -130,7 +130,7 @@ export default function AdminLayout() {
           </Link>
 
           <div className="mt-4 px-4 py-2 text-xs font-semibold text-gray-400 uppercase">User Interface</div>
-          <Link to="/" className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50">
+          <Link to="/" className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:rounded-[12px] ml-2 mr-2">
             <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -151,7 +151,7 @@ export default function AdminLayout() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-700">{currentUser?.displayName || "Admin User"}</p>
-              <button onClick={handleLogout} className="text-xs font-medium text-gray-500 hover:text-gray-700">
+              <button onClick={handleLogout} className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
                 Sign out
               </button>
             </div>

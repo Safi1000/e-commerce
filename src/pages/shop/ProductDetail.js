@@ -126,7 +126,7 @@ export default function ProductDetail() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-gray-900 border border-gray-800 rounded-sm p-12 text-center max-w-2xl mx-auto"
+            className="bg-gray-900 border border-gray-800 rounded-[12px] p-12 text-center max-w-2xl mx-auto"
           >
             <div className="h-24 w-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="h-12 w-12 text-gray-400" />
@@ -137,7 +137,7 @@ export default function ProductDetail() {
             </p>
             <Link
               to="/shop"
-              className="bg-white text-black py-3 px-8 rounded-sm hover:bg-gray-200 inline-flex items-center gap-2 transition-colors font-inter"
+              className="bg-white text-black py-3 px-8 rounded-[12px] hover:bg-gray-200 inline-flex items-center gap-2 transition-colors font-inter"
             >
               Back to Shop
               <ChevronLeft size={18} />
@@ -171,56 +171,56 @@ export default function ProductDetail() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-    <div className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden relative">
-      <img
-        src={relatedImages[activeImage] || product.imageUrl}
-        alt={product.name}
-        className="w-full h-96 object-cover"
-      />
-      
-      {/* Left Arrow */}
-      <button
-        onClick={() => setActiveImage((prev) => (prev === 0 ? relatedImages.length - 1 : prev - 1))}
-        className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full hover:bg-gray-800 transition-colors"
-      >
-        <ChevronLeft size={24} className="text-white" />
-      </button>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+            <div className="bg-gray-900 border border-gray-800 rounded-[12px] overflow-hidden relative">
+              <img
+                src={relatedImages[activeImage] || product.imageUrl}
+                alt={product.name}
+                className="w-full h-96 object-cover"
+              />
+              
+              {/* Left Arrow */}
+              <button
+                onClick={() => setActiveImage((prev) => (prev === 0 ? relatedImages.length - 1 : prev - 1))}
+                className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full hover:bg-gray-800 transition-colors"
+              >
+                <ChevronLeft size={24} className="text-white" />
+              </button>
 
-      {/* Right Arrow */}
-      <button
-        onClick={() => setActiveImage((prev) => (prev === relatedImages.length - 1 ? 0 : prev + 1))}
-        className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full hover:bg-gray-800 transition-colors"
-      >
-        <ChevronLeft size={24} className="text-white rotate-180" />
-      </button>
-    </div>
+              {/* Right Arrow */}
+              <button
+                onClick={() => setActiveImage((prev) => (prev === relatedImages.length - 1 ? 0 : prev + 1))}
+                className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full hover:bg-gray-800 transition-colors"
+              >
+                <ChevronLeft size={24} className="text-white rotate-180" />
+              </button>
+            </div>
 
-    {relatedImages.length > 1 && (
-      <div className="grid grid-cols-4 gap-2 mt-4">
-        {relatedImages.map((img, index) => (
-          <div
-            key={index}
-            className={`h-20 bg-gray-900 border cursor-pointer overflow-hidden ${activeImage === index ? "border-white" : "border-gray-800"}`}
-            onClick={() => setMainImage(index)}
-          >
-            <img
-              src={img || "/placeholder.svg"}
-              alt={`${product.name} view ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-    )}
-  </motion.div>
+            {relatedImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-2 mt-4">
+                {relatedImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`h-20 bg-gray-900 border cursor-pointer overflow-hidden rounded-[12px] ${activeImage === index ? "border-white" : "border-gray-800"}`}
+                    onClick={() => setMainImage(index)}
+                  >
+                    <img
+                      src={img || "/placeholder.svg"}
+                      alt={`${product.name} view ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-8">
+            <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-8">
               <h2 className="text-3xl font-bold mb-4 font-poppins">{product.name}</h2>
               <div className="text-3xl font-bold text-white mb-6">${product.price?.toFixed(2) || "0.00"}</div>
 
@@ -245,73 +245,57 @@ export default function ProductDetail() {
                 <div className="mb-8">
                   <h3 className="text-xl font-bold mb-3 font-poppins">QUANTITY</h3>
                   <div className="flex items-center">
-                  <button
-  onClick={decrementQuantity}
-  className="bg-black text-white p-2 rounded-sm border-t border-b border-gray-700 hover:bg-gray-800 transition-colors h-12"
->
-  <Minus size={16} />
-</button>
-
-<input
-  type="number"
-  id="quantity"
-  min="1"
-  value={quantity}
-  onChange={handleQuantityChange}
-  className="w-16 text-center border-t border-b border-gray-700 py-2 bg-black text-white focus:outline-none h-12"
-  // The input field remains the same with the border applied
-/>
-
-<button
-  onClick={incrementQuantity}
-  className="bg-black text-white p-2 rounded-sm border-t border-b border-gray-700 hover:bg-gray-800 transition-colors h-12"
->
-  <Plus size={16} />
-</button>
-
-
+                    <button
+                      onClick={decrementQuantity}
+                      className="bg-black text-white p-2 rounded-l-lg border-t border-b border-l border-gray-700 hover:bg-gray-800 transition-colors h-12"
+                    >
+                      <Minus size={20} />
+                    </button>
+                    <input
+                      type="text"
+                      value={quantity}
+                      onChange={handleQuantityChange}
+                      className="h-12 w-16 bg-black text-white text-center border-t border-b border-gray-700 focus:outline-none"
+                    />
+                    <button
+                      onClick={incrementQuantity}
+                      className="bg-black text-white p-2 rounded-r-lg border-t border-b border-r border-gray-700 hover:bg-gray-800 transition-colors h-12"
+                    >
+                      <Plus size={20} />
+                    </button>
                   </div>
                 </div>
               )}
 
               <div className="space-y-4">
                 {currentUser ? (
-                  <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={handleAddToCart}
-                      className={`w-full px-6 py-3 rounded-sm transition-colors flex items-center justify-center gap-2 font-inter ${
-                        addedToCart ? "bg-green-600 text-white" : "bg-white text-black hover:bg-gray-200"
+                      className={`w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 bg-green-900 text-black border border-green-500 ${
+                        addedToCart
+                          ? "w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 bg-green-900 text-white border border-green-500"
+                          : "font-inter bg-white text-black hover:bg-gray-200"
                       }`}
-                      disabled={addedToCart}
                     >
-                      {addedToCart ? (
-                        <>
-                          Added to Cart
-                          <Check size={18} />
-                        </>
-                      ) : (
-                        <>
-                          Add to Cart
-                          <ShoppingCart size={18} />
-                        </>
-                      )}
+                      {addedToCart ? <Check size={20} /> : <ShoppingCart size={20} />}
+                      {addedToCart ? "Added to Cart" : "Add to Cart"}
                     </button>
-
+                   
                     <button
                       onClick={handleBuyNow}
-                      className="w-full bg-transparent border border-white text-white px-6 py-3 rounded-sm hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
+                      className=" w-full bg-transparent border border-white text-white px-4 py-2 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
                     >
+                      <ShoppingBag size={20} />
                       Buy Now
-                      <ShoppingBag size={18} />
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <Link
                     to="/login"
-                    className="w-full bg-gray-800 text-gray-300 px-6 py-3 rounded-sm hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                    className="inline-block bg-white text-black py-3 px-6 rounded-[12px] hover:bg-gray-200 transition-colors text-center w-full"
                   >
-                    Sign in to add to cart
-                    <ChevronLeft size={18} className="rotate-180" />
+                    Sign in to Purchase
                   </Link>
                 )}
               </div>

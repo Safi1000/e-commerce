@@ -55,14 +55,11 @@ export default function Register() {
     <div className="min-h-screen bg-black text-white flex">
       {/* Left side - Image */}
       <div className="hidden md:block md:w-1/2 relative">
-     
-      <img
-  src={backgroundImage || "/placeholder.svg"}
-  alt="Fashion"
-  className="absolute inset-0 w-full h-full object-cover border-r border-white"
-/>
-
-
+        <img
+          src={backgroundImage || "/placeholder.svg"}
+          alt="Fashion"
+          className="absolute inset-0 w-full h-full object-cover border-r border-white"
+        />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="text-center p-8">
             <h1 className="text-5xl font-bold mb-4 font-poppins">
@@ -77,7 +74,7 @@ export default function Register() {
       </div>
 
       {/* Right side - Register form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full md:w-1/2 p-8 flex items-center justify-center">
         <div className="max-w-md w-full">
           <Link to="/" className="flex items-center text-gray-400 hover:text-white transition-colors mb-8 font-inter">
             <ChevronLeft className="h-5 w-5 mr-1" />
@@ -88,7 +85,7 @@ export default function Register() {
             initial="hidden"
             animate="visible"
             variants={fadeIn}
-            className="bg-gray-900 p-8 rounded-sm border border-gray-800"
+            className="bg-gray-900 p-8 rounded-[12px] border border-gray-800"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold font-poppins">CREATE ACCOUNT</h2>
@@ -96,7 +93,7 @@ export default function Register() {
             </div>
 
             {error && (
-              <div className="bg-black border border-red-500 text-red-400 px-4 py-3 rounded-sm mb-6 font-inter">
+              <div className="bg-black border border-red-500 text-red-400 px-4 py-3 rounded-[12px] mb-6 font-inter">
                 {error}
               </div>
             )}
@@ -116,7 +113,7 @@ export default function Register() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-sm focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -136,7 +133,7 @@ export default function Register() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-sm focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -156,7 +153,7 @@ export default function Register() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-sm focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
                     placeholder="Create a password"
                   />
                 </div>
@@ -176,7 +173,7 @@ export default function Register() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-sm focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
                     placeholder="Confirm your password"
                   />
                 </div>
@@ -186,7 +183,7 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-white text-black px-4 py-3 rounded-sm hover:bg-gray-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed font-inter"
+                  className="w-full bg-white text-black px-4 py-3 rounded-[12px] hover:bg-gray-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed font-inter"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">

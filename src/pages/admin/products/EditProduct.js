@@ -197,8 +197,8 @@ export default function EditProduct() {
     <div>
       <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">{error}</div>}
+      <div className="bg-white rounded-[12px] shadow p-6">
+        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-[12px]">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -211,7 +211,7 @@ export default function EditProduct() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 required
               />
             </div>
@@ -225,7 +225,7 @@ export default function EditProduct() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
@@ -240,7 +240,7 @@ export default function EditProduct() {
                 onChange={(e) => setPrice(e.target.value)}
                 min="0"
                 step="0.01"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 required
               />
             </div>
@@ -256,7 +256,7 @@ export default function EditProduct() {
                 onChange={(e) => setStock(e.target.value)}
                 min="0"
                 step="1"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function EditProduct() {
                 id="category"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 required
               >
                 <option value="">Select a category</option>
@@ -288,7 +288,7 @@ export default function EditProduct() {
                     <img
                       src={imagePreview || "/placeholder.svg"}
                       alt="Preview"
-                      className="h-32 w-32 object-cover rounded-md"
+                      className="h-32 w-32 object-cover rounded-[12px]"
                     />
                     <button
                       type="button"
@@ -305,7 +305,7 @@ export default function EditProduct() {
                     </button>
                   </div>
                 ) : (
-                  <div className="h-32 w-32 border-2 border-gray-300 border-dashed rounded-md flex items-center justify-center">
+                  <div className="h-32 w-32 border-2 border-gray-300 border-dashed rounded-[12px] flex items-center justify-center">
                     <svg className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
                         strokeLinecap="round"
@@ -317,7 +317,7 @@ export default function EditProduct() {
                   </div>
                 )}
                 <div className="ml-4 flex-1">
-                  <div className="relative bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm flex items-center cursor-pointer hover:bg-gray-50">
+                  <div className="relative bg-white py-2 px-3 border border-gray-300 rounded-[12px] shadow-sm flex items-center cursor-pointer hover:bg-gray-50">
                     <input
                       id="file-upload"
                       name="file-upload"
@@ -350,14 +350,14 @@ export default function EditProduct() {
             <button
               type="button"
               onClick={() => navigate("/admin/products")}
-              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
+              className="bg-white py-2 px-4 border border-gray-300 rounded-[12px] shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 py-2 px-4 border border-transparent rounded-[12px] shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>

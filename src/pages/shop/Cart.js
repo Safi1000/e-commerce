@@ -62,7 +62,7 @@ export default function Cart() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-gray-900 border border-gray-800 rounded-sm p-12 text-center max-w-2xl mx-auto"
+            className="bg-gray-900 border border-gray-800 rounded-[12px] p-12 text-center max-w-2xl mx-auto"
           >
             <div className="h-24 w-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingCart className="h-12 w-12 text-gray-400" />
@@ -71,7 +71,7 @@ export default function Cart() {
             <p className="text-gray-400 mb-8 font-inter">Looks like you haven't added any products to your cart yet.</p>
             <Link
               to="/shop"
-              className="bg-white text-black py-3 px-8 rounded-sm hover:bg-gray-200 inline-flex items-center gap-2 transition-colors font-inter"
+              className="bg-white text-black py-3 px-8 rounded-[12px] hover:bg-gray-200 inline-flex items-center gap-2 transition-colors font-inter"
             >
               Continue Shopping
               <ChevronRight size={18} />
@@ -85,7 +85,7 @@ export default function Cart() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden">
+              <div className="bg-gray-900 border border-gray-800 rounded-[12px] overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-800">
                     <thead className="bg-black">
@@ -127,7 +127,7 @@ export default function Cart() {
                         <tr key={item.id} className="hover:bg-gray-800 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="h-16 w-16 flex-shrink-0 bg-gray-800 rounded-sm overflow-hidden">
+                              <div className="h-16 w-16 flex-shrink-0 bg-gray-800 rounded-[12px] overflow-hidden">
                                 <img
                                   className="h-16 w-16 object-cover"
                                   src={item.imageUrl || getPlaceholderImage(80, 80)}
@@ -143,35 +143,34 @@ export default function Cart() {
                             <div className="text-sm text-white font-inter">${item.price.toFixed(2)}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-  <div className="flex items-center">
-    <button
-      onClick={() => {
-        if (item.quantity === 1) {
-          removeFromCart(item.id);
-        } else {
-          updateQuantity(item.id, item.quantity - 1);
-        }
-      }}
-      className="bg-black text-white p-2 rounded-sm border-t border-b border-gray-700 hover:bg-gray-700 transition-colors flex items-center justify-center w-10 h-10"
-    >
-      <Minus size={16} />
-    </button>
-    <input
-      type="number"
-      value={item.quantity}
-      onChange={(e) => updateQuantity(item.id, Math.max(1, parseInt(e.target.value)))}
-      className="w-12 h-10 text-center border-t border-b border-gray-700 bg-black text-white "
-      min="1"
-    />
-    <button
-      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-      className="bg-black text-white p-2 rounded-sm hover:bg-gray-700 transition-colors flex items-center justify-center w-10 h-10 border-t border-b border-gray-700"
-    >
-      <Plus size={16} />
-    </button>
-  </div>
-</td>
-
+                            <div className="flex items-center">
+                              <button
+                                onClick={() => {
+                                  if (item.quantity === 1) {
+                                    removeFromCart(item.id);
+                                  } else {
+                                    updateQuantity(item.id, item.quantity - 1);
+                                  }
+                                }}
+                                className="bg-black text-white p-2 rounded-l-lg border-t border-b border-l border-gray-700 hover:bg-gray-700 transition-colors flex items-center justify-center w-10 h-10"
+                              >
+                                <Minus size={16} />
+                              </button>
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => updateQuantity(item.id, Math.max(1, parseInt(e.target.value)))}
+                                className="w-12 h-10 text-center border-t border-b border-gray-700 bg-black text-white"
+                                min="1"
+                              />
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="bg-black text-white p-2 rounded-r-lg hover:bg-gray-700 transition-colors flex items-center justify-center w-10 h-10 border-t border-b border-r border-gray-700"
+                              >
+                                <Plus size={16} />
+                              </button>
+                            </div>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-white font-medium font-inter">
                               ${(item.price * item.quantity).toFixed(2)}
@@ -180,7 +179,7 @@ export default function Cart() {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
                               onClick={() => removeFromCart(item.id)}
-                              className="text-gray-400 hover:text-white transition-colors"
+                              className="text-gray-400 hover:text-white transition-colors bg-gray-800 p-2 rounded-[12px]"
                             >
                               <X size={18} />
                             </button>
@@ -193,13 +192,13 @@ export default function Cart() {
                 <div className="px-6 py-4 bg-black flex justify-between">
                   <button
                     onClick={clearCart}
-                    className="text-gray-400 hover:text-white text-sm font-medium transition-colors font-inter"
+                    className="text-gray-400 hover:text-white text-sm font-medium transition-colors font-inter hover:bg-gray-800 p-2 rounded-[12px]"
                   >
                     Clear Cart
                   </button>
                   <Link
                     to="/shop"
-                    className="text-gray-400 hover:text-white text-sm font-medium transition-colors font-inter flex items-center gap-1"
+                    className="text-gray-400 hover:text-white text-sm font-medium transition-colors font-inter flex items-center gap-1 hover:bg-gray-800 p-2 rounded-[12px]"
                   >
                     Continue Shopping
                     <ChevronRight size={16} />
@@ -213,7 +212,7 @@ export default function Cart() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="bg-gray-900 border border-gray-800 rounded-sm p-6">
+              <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6">
                 <h2 className="text-xl font-bold mb-6 font-poppins">ORDER SUMMARY</h2>
 
                 <div className="space-y-4">
@@ -249,27 +248,38 @@ export default function Cart() {
                   <div className="flex space-x-2">
                     <input
                       type="text"
-                      placeholder="Coupon code"
+                      placeholder="Coupon Code"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="bg-black text-white px-4 py-2 rounded-[12px] border border-gray-700 flex-grow focus:outline-none focus:border-white"
                     />
                     <button
                       onClick={handleApplyCoupon}
-                      className="bg-white text-black py-2 px-4 rounded-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
+                      disabled={!couponCode}
+                      className="bg-white text-black px-4 py-2 rounded-[12px] hover:bg-gray-200 transition-colors flex items-center gap-1 font-inter"
                     >
                       <Tag size={16} />
                       Apply
                     </button>
                   </div>
 
-                  <Link
-                    to="/checkout"
-                    className="block w-full bg-white text-black text-center py-3 px-4 rounded-sm hover:bg-gray-200 transition-colors font-medium font-inter flex items-center justify-center gap-2"
-                  >
-                    Proceed to Checkout
-                    <ChevronRight size={18} />
-                  </Link>
+                  {currentUser ? (
+                    <Link
+                      to="/checkout"
+                      className="bg-white text-black w-full py-3 rounded-[12px] hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-inter"
+                    >
+                      Proceed to Checkout
+                      <ChevronRight size={18} />
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="bg-gray-800 text-gray-300 w-full py-3 rounded-[12px] hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                    >
+                      Sign In to Checkout
+                      <ChevronRight size={18} />
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>

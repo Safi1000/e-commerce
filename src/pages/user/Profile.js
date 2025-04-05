@@ -152,12 +152,12 @@ export default function Profile() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <motion.div className="md:col-span-2" initial="hidden" animate="visible" variants={fadeIn}>
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-6">
+            <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6">
               <h2 className="text-xl font-bold mb-6 font-poppins">PERSONAL INFORMATION</h2>
 
               {message.text && (
                 <div
-                  className={`mb-6 p-4 rounded-sm border ${
+                  className={`mb-6 p-4 rounded-[12px] border ${
                     message.type === "success"
                       ? "border-green-500 bg-black text-green-400 flex items-center"
                       : "border-red-500 bg-black text-red-400 flex items-center"
@@ -184,7 +184,7 @@ export default function Profile() {
                       name="name"
                       value={userData.name}
                       onChange={handleChange}
-                      className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                     />
                   </div>
 
@@ -198,7 +198,7 @@ export default function Profile() {
                       name="email"
                       value={userData.email}
                       disabled
-                      className="block w-full bg-gray-800 border border-gray-700 rounded-sm py-2 px-3 text-gray-400"
+                      className="block w-full bg-gray-800 border border-gray-700 rounded-[12px] py-2 px-3 text-gray-400"
                     />
                     <p className="mt-1 text-xs text-gray-500 font-inter">Email cannot be changed</p>
                   </div>
@@ -213,7 +213,7 @@ export default function Profile() {
                       name="address"
                       value={userData.address}
                       onChange={handleChange}
-                      className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                     />
                   </div>
 
@@ -227,7 +227,7 @@ export default function Profile() {
                       name="city"
                       value={userData.city}
                       onChange={handleChange}
-                      className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                     />
                   </div>
 
@@ -241,7 +241,7 @@ export default function Profile() {
                       name="state"
                       value={userData.state}
                       onChange={handleChange}
-                      className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                     />
                   </div>
 
@@ -255,7 +255,7 @@ export default function Profile() {
                       name="zipCode"
                       value={userData.zipCode}
                       onChange={handleChange}
-                      className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                     />
                   </div>
 
@@ -268,7 +268,7 @@ export default function Profile() {
                       name="country"
                       value={userData.country}
                       onChange={handleChange}
-                      className="block w-full bg-black border border-gray-700 rounded-sm py-2 px-3 focus:outline-none focus:border-white text-white"
+                      className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
                     >
                       <option value="">Select a country</option>
                       <option value="United States">United States</option>
@@ -283,7 +283,7 @@ export default function Profile() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-white text-black py-2 px-6 rounded-sm text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 font-inter"
+                    className="bg-white text-black py-2 px-6 rounded-[12px] text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 font-inter"
                   >
                     {saving ? (
                       <>
@@ -300,9 +300,9 @@ export default function Profile() {
           </motion.div>
 
           <motion.div initial="hidden" animate="visible" variants={fadeIn}>
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-6">
+            <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6">
               <div className="flex items-center mb-6">
-                <div className="h-16 w-16 rounded-sm bg-black flex items-center justify-center text-white text-xl font-bold">
+                <div className="h-16 w-16 rounded-[12px] bg-black flex items-center justify-center text-white text-xl font-bold">
                   {userData.name.charAt(0) || <User className="h-8 w-8" />}
                 </div>
                 <div className="ml-4">
@@ -314,7 +314,7 @@ export default function Profile() {
               <div className="border-t border-gray-800 pt-4">
                 <button
                   onClick={handleLogout}
-                  className="w-full bg-black border border-gray-700 text-white py-3 px-4 rounded-sm hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-inter"
+                  className="w-full bg-black border border-gray-700 text-white py-3 px-4 rounded-[12px] hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-inter"
                 >
                   <LogOut className="h-5 w-5" />
                   Sign Out
@@ -322,13 +322,13 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="bg-gray-900 border border-gray-800 rounded-sm p-6 mt-6">
+            <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6 mt-6">
               <h2 className="text-lg font-bold mb-4 font-poppins">ACCOUNT ACTIONS</h2>
 
               <div className="space-y-4">
                 <button
                   onClick={() => navigate("/cart")}
-                  className="w-full bg-black border border-gray-700 text-white py-3 px-4 rounded-sm hover:bg-gray-800 transition-colors text-left flex items-center gap-3 font-inter"
+                  className="w-full bg-black border border-gray-700 text-white py-3 px-4 rounded-[12px] hover:bg-gray-800 transition-colors text-left flex items-center gap-3 font-inter"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   View Cart
@@ -336,7 +336,7 @@ export default function Profile() {
 
                 <button
                   onClick={() => navigate("/shop")}
-                  className="w-full bg-black border border-gray-700 text-white py-3 px-4 rounded-sm hover:bg-gray-800 transition-colors text-left flex items-center gap-3 font-inter"
+                  className="w-full bg-black border border-gray-700 text-white py-3 px-4 rounded-[12px] hover:bg-gray-800 transition-colors text-left flex items-center gap-3 font-inter"
                 >
                   <ShoppingBag className="h-5 w-5" />
                   Continue Shopping

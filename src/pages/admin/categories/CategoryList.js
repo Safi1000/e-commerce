@@ -61,20 +61,20 @@ export default function CategoryList() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Categories</h1>
-        <Link to="/admin/categories/add" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+        <Link to="/admin/categories/add" className="bg-blue-600 text-white px-4 py-2 rounded-[12px] hover:bg-blue-700">
           Add Category
         </Link>
       </div>
 
       {categories.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-6 text-center">
+        <div className="bg-white rounded-[12px] shadow p-6 text-center">
           <p className="text-gray-500 mb-4">No categories found</p>
-          <Link to="/admin/categories/add" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          <Link to="/admin/categories/add" className="bg-blue-600 text-white px-4 py-2 rounded-[12px] hover:bg-blue-700">
             Add your first category
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-[12px] shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -128,7 +128,7 @@ export default function CategoryList() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-auto">
+          <div className="bg-white rounded-[12px] p-6 max-w-md mx-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
             <p className="text-sm text-gray-500 mb-4">
               Are you sure you want to delete "{categoryToDelete?.name}"? This action cannot be undone.
@@ -136,13 +136,13 @@ export default function CategoryList() {
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-[12px] text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 border border-transparent rounded-[12px] text-sm font-medium text-white hover:bg-red-700"
               >
                 Delete
               </button>
