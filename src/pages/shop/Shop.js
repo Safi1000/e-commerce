@@ -6,12 +6,13 @@ import { collection, getDocs } from "firebase/firestore"
 import { db } from "../../firebase/config"
 import { useCart } from "../../contexts/CartContext"
 import { useAuth } from "../../contexts/AuthContext"
+import { useTheme } from "../../contexts/ThemeContext"
 import { getImage } from "../../utils/imageApi"
 import { motion } from "framer-motion"
 import { Search, Filter, X, Check, ChevronRight, ShoppingBag } from "lucide-react"
-import { Slider } from '@mui/material';
-import { NewtonsCradle } from 'ldrs/react'
-import 'ldrs/react/NewtonsCradle.css'
+import { Slider } from "@mui/material"
+import { NewtonsCradle } from "ldrs/react"
+import "ldrs/react/NewtonsCradle.css"
 
 export default function Shop() {
   const [products, setProducts] = useState([])
@@ -23,6 +24,7 @@ export default function Shop() {
   const [searchTerm, setSearchTerm] = useState("")
   const [addedToCart, setAddedToCart] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
+  const { theme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const { addToCart } = useCart()
@@ -147,23 +149,23 @@ export default function Shop() {
   }
 
   const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    
+    const value = e.target.value
+    setSearchTerm(value)
+
     // Update URL in real-time as user types
-    const params = new URLSearchParams(location.search);
-    
+    const params = new URLSearchParams(location.search)
+
     if (value.trim()) {
-      params.set("search", value.trim());
+      params.set("search", value.trim())
     } else {
-      params.delete("search");
+      params.delete("search")
     }
-    
+
     // Preserve other parameters
-    if (selectedCategory) params.set("category", selectedCategory);
-    if (priceRange.min) params.set("minPrice", priceRange.min);
-    if (priceRange.max) params.set("maxPrice", priceRange.max);
-    
+    if (selectedCategory) params.set("category", selectedCategory)
+    if (priceRange.min) params.set("minPrice", priceRange.min)
+    if (priceRange.max) params.set("maxPrice", priceRange.max)
+
     // Update URL and trigger filter through URL effect
     navigate(
       {
@@ -171,8 +173,8 @@ export default function Shop() {
         search: params.toString(),
       },
       { replace: true },
-    );
-  };
+    )
+  }
 
   const handleCategoryChange = (e) => {
     const category = e.target.value
@@ -263,21 +265,55 @@ export default function Shop() {
 
   // Placeholder image URL helper function
   const getPlaceholderImage = (width, height) => {
-    return `https://via.placeholder.com/${width}x${height}/1a1a1a/ffffff?text=ShopEase`
+    return theme === "dark"
+      ? `https://via.placeholder.com/${width}x${height}/1a1a1a/ffffff?text=ShopEase`
+      : `https://via.placeholder.com/${width}x${height}/f0f0f0/333333?text=ShopEase`
   }
 
   const handleSliderChange = (event, newValue) => {
-    setPriceRange({ min: newValue[0], max: newValue[1] });
-    const params = new URLSearchParams(location.search);
-    params.set('minPrice', newValue[0]);
-    params.set('maxPrice', newValue[1]);
-    if (selectedCategory) params.set('category', selectedCategory);
-    if (searchTerm.trim()) params.set('search', searchTerm.trim());
-    navigate({ pathname: '/shop', search: params.toString() }, { replace: true });
-  };
+    setPriceRange({ min: newValue[0], max: newValue[1] })
+    const params = new URLSearchParams(location.search)
+    params.set("minPrice", newValue[0])
+    params.set("maxPrice", newValue[1])
+    if (selectedCategory) params.set("category", selectedCategory)
+    if (searchTerm.trim()) params.set("search", searchTerm.trim())
+    navigate({ pathname: "/shop", search: params.toString() }, { replace: true })
+  }
+
+  // Theme-based styles
+  const styles = {
+    background: theme === "dark" ? "bg-black" : "bg-white",
+    text: theme === "dark" ? "text-white" : "text-gray-900",
+    subtext: theme === "dark" ? "text-gray-400" : "text-gray-600",
+    card: `${theme === "dark" ? "bg-gray-900" : "bg-white"} border-[1px]  ${theme === "dark" ? "border-gray-800" : "border-gray-900"}`,
+    cardHover: theme === "dark" ? "hover:border-gray-600" : "hover:border-gray-400",
+    input:
+      theme === "dark"
+        ? "bg-black border-gray-800 focus:border-gray-600"
+        : "bg-white border-gray-300 focus:border-gray-400",
+    button: theme === "dark" ? "bg-white text-black hover:bg-gray-200" : "bg-gray-900 text-white hover:bg-gray-800",
+    buttonOutline:
+      theme === "dark"
+        ? "border-white text-white hover:bg-white hover:text-black"
+        : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white",
+    divider: theme === "dark" ? "bg-white" : "bg-gray-900",
+    checkboxActive: theme === "dark" ? "border-white bg-white text-black" : "border-gray-900 bg-gray-900 text-white",
+    checkboxInactive: theme === "dark" ? "border-gray-600" : "border-gray-400",
+    radioTextActive: theme === "dark" ? "text-white" : "text-gray-900",
+    radioTextInactive: theme === "dark" ? "text-gray-400" : "text-gray-600",
+    loadingColor: theme === "dark" ? "white" : "black",
+    noResultsIcon: theme === "dark" ? "bg-black text-gray-400" : "bg-gray-100 text-gray-600",
+    sliderColor: theme === "dark" ? "white" : "black",
+    sliderRail: theme === "dark" ? "#8D8D8D" : "#D1D1D1",
+    mobileFilterButton: theme === "dark" ? "bg-gray-900 border-gray-800" : "bg-white border-gray-300",
+    addedToCartButton:
+      theme === "dark" ? "bg-green-900 text-white border-green-500" : "bg-green-100 text-green-800 border-green-300",
+    signInButton:
+      theme === "dark" ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300",
+  }
 
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className={`${styles.background} ${styles.text} min-h-screen`}>
       <div className="container mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -285,11 +321,10 @@ export default function Shop() {
           transition={{ duration: 0.5 }}
           className="mb-12"
         >
-<div className="w-fit">
-  <h1 className="text-4xl font-bold mb-2 tracking-tight font-poppins">SHOP</h1>
-  <div className="h-1 bg-white w-full"></div>
-</div>
-
+          <div className="w-fit">
+            <h1 className="text-4xl font-bold mb-2 tracking-tight font-poppins">SHOP</h1>
+            <div className={`h-1 ${styles.divider} w-full`}></div>
+          </div>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -297,7 +332,7 @@ export default function Shop() {
           <div className="lg:hidden mb-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full bg-gray-900 border border-gray-800 text-white py-3 px-4 rounded-[12px] flex items-center justify-center gap-2"
+              className={`w-full ${styles.mobileFilterButton} py-3 px-4 rounded-[12px] flex items-center justify-center gap-2`}
             >
               {showFilters ? (
                 <>
@@ -320,13 +355,13 @@ export default function Shop() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-6 sticky top-20">
+            <div className={`${styles.card} ${styles.cardHover} rounded-[12px] p-6 sticky top-20 transition-colors`}>
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white font-poppins">FILTERS</h3>
+                <h3 className={`text-lg font-bold ${styles.text} font-poppins`}>FILTERS</h3>
                 {(selectedCategory || searchTerm || priceRange.min || priceRange.max) && (
                   <button
                     onClick={clearFilters}
-                    className="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                    className={`text-xs ${styles.subtext} hover:${styles.text} transition-colors flex items-center gap-1`}
                   >
                     Clear All
                     <X size={14} />
@@ -337,23 +372,23 @@ export default function Shop() {
               <div className="space-y-8">
                 {/* Real-time search input */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">SEARCH PRODUCTS</h4>
+                  <h4 className={`text-sm font-semibold ${styles.subtext} mb-3 font-poppins`}>SEARCH PRODUCTS</h4>
                   <div className="relative">
                     <input
                       type="text"
                       value={searchTerm}
                       onChange={handleSearchChange}
                       placeholder="Search..."
-                      className="bg-black border border-gray-800 w-full py-2 px-3 pr-10 rounded-[12px] text-white text-sm focus:outline-none focus:border-gray-600"
+                      className={`${styles.input} w-full py-2 px-3 pr-10 rounded-[12px] ${styles.text} text-sm focus:outline-none`}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <Search size={16} className="text-gray-400" />
+                      <Search size={16} className={styles.subtext} />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">CATEGORIES</h4>
+                  <h4 className={`text-sm font-semibold ${styles.subtext} mb-3 font-poppins`}>CATEGORIES</h4>
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <input
@@ -368,12 +403,12 @@ export default function Shop() {
                       <label
                         htmlFor="all-categories"
                         className={`flex items-center cursor-pointer text-sm ${
-                          selectedCategory === "" ? "text-white" : "text-gray-400"
+                          selectedCategory === "" ? styles.radioTextActive : styles.radioTextInactive
                         }`}
                       >
                         <span
                           className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
-                            selectedCategory === "" ? "border-white bg-white text-black" : "border-gray-600"
+                            selectedCategory === "" ? styles.checkboxActive : styles.checkboxInactive
                           }`}
                         >
                           {selectedCategory === "" && <Check size={12} />}
@@ -396,12 +431,12 @@ export default function Shop() {
                         <label
                           htmlFor={category.id}
                           className={`flex items-center cursor-pointer text-sm ${
-                            selectedCategory === category.id ? "text-white" : "text-gray-400"
+                            selectedCategory === category.id ? styles.radioTextActive : styles.radioTextInactive
                           }`}
                         >
                           <span
                             className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
-                              selectedCategory === category.id ? "border-white bg-white text-black" : "border-gray-600"
+                              selectedCategory === category.id ? styles.checkboxActive : styles.checkboxInactive
                             }`}
                           >
                             {selectedCategory === category.id && <Check size={12} />}
@@ -414,36 +449,33 @@ export default function Shop() {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-300 mb-3 font-poppins">PRICE RANGE</h4>
+                  <h4 className={`text-sm font-semibold ${styles.subtext} mb-3 font-poppins`}>PRICE RANGE</h4>
                   <div>
                     <Slider
-                      value={[
-                        parseFloat(priceRange.min) || 0,
-                        parseFloat(priceRange.max) || 1000
-                      ]}
+                      value={[Number.parseFloat(priceRange.min) || 0, Number.parseFloat(priceRange.max) || 10000]}
                       onChange={handleSliderChange}
                       valueLabelDisplay="auto"
                       min={0}
-                      max={1000}
+                      max={10000}
                       sx={{
-                        color: 'white',
-                        '& .MuiSlider-thumb': {
+                        color: styles.sliderColor,
+                        "& .MuiSlider-thumb": {
                           height: 16,
                           width: 16,
-                          backgroundColor: 'white',
+                          backgroundColor: styles.sliderColor,
                         },
-                        '& .MuiSlider-track': {
+                        "& .MuiSlider-track": {
                           height: 2,
                         },
-                        '& .MuiSlider-rail': {
-                          color: '#8D8D8D',
+                        "& .MuiSlider-rail": {
+                          color: styles.sliderRail,
                           height: 2,
                         },
                       }}
                     />
                     <div className="grid grid-cols-2 gap-4 mt-4">
                       <div>
-                        <label htmlFor="min" className="block text-xs text-gray-400 mb-1">
+                        <label htmlFor="min" className={`block text-xs ${styles.subtext} mb-1`}>
                           Min Price
                         </label>
                         <input
@@ -452,12 +484,12 @@ export default function Shop() {
                           name="min"
                           value={priceRange.min}
                           onChange={handlePriceChange}
-                          className="bg-black border border-gray-800 w-full py-2 px-3 rounded-[12px] text-white text-sm focus:outline-none focus:border-gray-600"
+                          className={`${styles.input} w-full py-2 px-3 rounded-[12px] ${styles.text} text-sm focus:outline-none`}
                           placeholder="$0"
                         />
                       </div>
                       <div>
-                        <label htmlFor="max" className="block text-xs text-gray-400 mb-1">
+                        <label htmlFor="max" className={`block text-xs ${styles.subtext} mb-1`}>
                           Max Price
                         </label>
                         <input
@@ -466,8 +498,8 @@ export default function Shop() {
                           name="max"
                           value={priceRange.max}
                           onChange={handlePriceChange}
-                          className="bg-black border border-gray-800 w-full py-2 px-3 rounded-[12px] text-white text-sm focus:outline-none focus:border-gray-600"
-                          placeholder="$1000"
+                          className={`${styles.input} w-full py-2 px-3 rounded-[12px] ${styles.text} text-sm focus:outline-none`}
+                          placeholder="$10000"
                         />
                       </div>
                     </div>
@@ -481,24 +513,20 @@ export default function Shop() {
           <div className="flex-1">
             {loading ? (
               <div className="flex justify-center items-center min-h-[60vh]">
-                <NewtonsCradle
-                  size="78"
-                  speed="1.4"
-                  color="white" 
-                />
+                <NewtonsCradle size="78" speed="1.4" color={styles.loadingColor} />
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-12 text-center">
-                <div className="h-24 w-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                  <X className="h-12 w-12 text-gray-400" />
+              <div className={`${styles.card} ${styles.cardHover} rounded-[12px] p-12 text-center transition-colors`}>
+                <div
+                  className={`h-24 w-24 ${styles.noResultsIcon} rounded-full flex items-center justify-center mx-auto mb-6`}
+                >
+                  <X className="h-12 w-12" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2 font-poppins">NO PRODUCTS FOUND</h3>
-                <p className="text-gray-400 mb-8 font-inter">
-                  Try adjusting your search or filter criteria.
-                </p>
+                <h3 className={`text-2xl font-bold ${styles.text} mb-2 font-poppins`}>NO PRODUCTS FOUND</h3>
+                <p className={`${styles.subtext} mb-8 font-inter`}>Try adjusting your search or filter criteria.</p>
                 <button
                   onClick={clearFilters}
-                  className="bg-white text-black py-3 px-8 rounded-[12px] hover:bg-gray-200 inline-flex items-center gap-2 transition-colors font-inter"
+                  className={`${styles.button} py-3 px-8 rounded-[12px] inline-flex items-center gap-2 transition-colors font-inter`}
                 >
                   Clear Filters
                   <X size={18} />
@@ -512,9 +540,9 @@ export default function Shop() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="bg-gray-900 border border-gray-800 rounded-[12px] overflow-hidden hover:border-gray-700 transition-colors"
+                    className={`${styles.card} ${styles.cardHover} rounded-[12px] overflow-hidden transition-colors`}
                   >
-                    <div className="h-64 bg-black relative overflow-hidden">
+                    <div className={`h-64 ${theme === "dark" ? "bg-black" : "bg-gray-100"} relative overflow-hidden`}>
                       <img
                         src={product.imageUrl || getPlaceholderImage(400, 300)}
                         alt={product.name}
@@ -522,29 +550,29 @@ export default function Shop() {
                       />
                     </div>
                     <div className="p-5">
-                      <h3 className="text-white font-medium text-lg mb-2 font-inter">{product.name}</h3>
-                      <p className="text-gray-400 text-sm mb-3 font-inter">{product.category}</p>
+                      <h3 className={`${styles.text} font-medium text-lg mb-2 font-inter`}>{product.name}</h3>
+                      <p className={`${styles.subtext} text-sm mb-3 font-inter`}>{product.category}</p>
                       <div className="flex justify-between items-center mb-3">
-                        <span className="text-white text-xl font-bold font-inter">${product.price?.toFixed(2) || "0.00"}</span>
+                        <span className={`${styles.text} text-xl font-bold font-inter`}>
+                          ${product.price?.toFixed(2) || "0.00"}
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="px-5 pb-5 space-y-3">
                       <Link
                         to={`/product/${product.id}`}
-                        className="w-full bg-transparent border border-white text-white px-4 py-3 rounded-[12px] hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 font-inter"
+                        className={`w-full bg-transparent border ${styles.buttonOutline} px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter`}
                       >
                         View Details
                         <ChevronRight size={16} />
                       </Link>
-                      
+
                       {currentUser ? (
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className={`w-full py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 ${
-                            addedToCart === product.id
-                              ? "bg-green-900 text-white border border-green-500"
-                              : "bg-white text-black hover:bg-gray-200"
+                          className={`w-full py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter ${
+                            addedToCart === product.id ? styles.addedToCartButton : styles.button
                           }`}
                           disabled={addedToCart === product.id}
                         >
@@ -561,7 +589,7 @@ export default function Shop() {
                       ) : (
                         <Link
                           to="/login"
-                          className="w-full bg-gray-800 text-gray-300 px-4 py-3 rounded-[12px] hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                          className={`w-full ${styles.signInButton} px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter`}
                         >
                           Sign in to add to cart
                           <ChevronRight size={16} />
@@ -578,4 +606,3 @@ export default function Shop() {
     </div>
   )
 }
-
