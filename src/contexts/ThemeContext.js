@@ -1,58 +1,41 @@
-import { createContext, useContext, useState, useEffect } from "react";
+"use client"
 
-const ThemeContext = createContext();
+import { createContext, useContext, useState, useEffect } from "react"
+
+const ThemeContext = createContext()
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  return useContext(ThemeContext)
 }
 
 export function ThemeProvider({ children }) {
-  // Check user's preferred color scheme and stored preference
-  const getInitialTheme = () => {
-    const savedTheme = localStorage.getItem("theme");
-    
-    if (savedTheme) {
-      return savedTheme;
-    }
-    
-    // Default to dark theme if no saved preference
-    return "dark";
-  };
+  const [theme, setTheme] = useState("dark") // Default to dark theme
 
-  const [theme, setTheme] = useState(getInitialTheme);
-
-  // Toggle between light and dark theme
-  const toggleTheme = () => {
-    setTheme(prevTheme => {
-      const newTheme = prevTheme === "dark" ? "light" : "dark";
-      return newTheme;
-    });
-  };
-
-  // Update localStorage and body class when theme changes
+  // Check for saved theme preference or system preference on mount
   useEffect(() => {
-    localStorage.setItem("theme", theme);
-    
-    // Apply theme to document body
-    if (theme === "dark") {
-      document.body.classList.add("dark-theme");
-      document.body.classList.remove("light-theme");
-    } else {
-      document.body.classList.add("light-theme");
-      document.body.classList.remove("dark-theme");
+    const savedTheme = localStorage.getItem("theme")
+
+    if (savedTheme) {
+      setTheme(savedTheme)
+    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+      setTheme("light")
     }
-  }, [theme]);
+
+    // Apply theme class to document
+    document.documentElement.classList.toggle("dark", theme === "dark")
+  }, [theme])
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark"
+    setTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
+    document.documentElement.classList.toggle("dark", newTheme === "dark")
+  }
 
   const value = {
     theme,
-    setTheme,
     toggleTheme,
-    isDark: theme === "dark"
-  };
+  }
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
-} 
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+}

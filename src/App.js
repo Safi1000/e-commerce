@@ -54,9 +54,23 @@ function App() {
               <Route path="/" element={<UserLayout><Home /></UserLayout>} />
               <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
               <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
-              <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
-              <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
-              <Route path="/profile" element={<UserLayout><Profile /></UserLayout>} />
+              
+              {/* Protected Routes */}
+              <Route path="/cart" element={
+                <PrivateRoute>
+                  <UserLayout><Cart /></UserLayout>
+                </PrivateRoute>
+              } />
+              <Route path="/checkout" element={
+                <PrivateRoute>
+                  <UserLayout><Checkout /></UserLayout>
+                </PrivateRoute>
+              } />
+              <Route path="/profile" element={
+                <PrivateRoute>
+                  <UserLayout><Profile /></UserLayout>
+                </PrivateRoute>
+              } />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLayout />}>
@@ -102,7 +116,7 @@ function PrivateRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" />
+    return <Navigate to="/" />
   }
 
   return children

@@ -7,6 +7,8 @@ import { useCart } from "../../contexts/CartContext"
 import { ShoppingBag, Search, User, LogOut, Menu, X, ChevronDown, Home, ShoppingCart, Settings } from "lucide-react"
 import ThemeToggle from "../ThemeToggle"
 import { useTheme } from "../../contexts/ThemeContext"
+import { NewtonsCradle } from 'ldrs/react'
+import 'ldrs/react/NewtonsCradle.css'
 
 export default function UserLayout({ children }) {
   const { currentUser, logout, userRole, isAdmin } = useAuth()
@@ -16,13 +18,37 @@ export default function UserLayout({ children }) {
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isPageLoaded, setIsPageLoaded] = useState(false)
+
+  useEffect(() => {
+    // Set page loaded to true when all content is loaded
+    const handleLoad = () => {
+      setIsPageLoaded(true)
+    }
+
+    window.addEventListener('load', handleLoad)
+    return () => window.removeEventListener('load', handleLoad)
+  }, [])
+
+  const handleLogoClick = (e) => {
+    if (location.pathname === "/") {
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
 
   const handleLogout = async () => {
     try {
+      setIsLoggingOut(true)
+      setIsPageLoaded(false)
       await logout()
-      navigate("/")
+      // Force a page reload after logout
+      window.location.reload()
     } catch (error) {
       console.error("Failed to log out", error)
+      setIsLoggingOut(false)
+      setIsPageLoaded(true)
     }
   }
 
@@ -78,14 +104,30 @@ export default function UserLayout({ children }) {
     }
   }, [location.pathname, location.search])
 
+  if (isLoggingOut && !isPageLoaded) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-black" : "bg-white"}`}>
+        <NewtonsCradle
+          size="78"
+          speed="1.4"
+          color={theme === "dark" ? "white" : "black"}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={`min-h-screen flex flex-col theme-transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-gray-900"}`}>
       {/* Header */}
-      <header className={`${theme === "dark" ? "bg-gray-800 border-b border-white-800" : "bg-white border-b border-gray-200"} sticky top-0 z-50 theme-transition`}>
+      <header className={`${theme === "dark" ? "bg-gray-800 border-b-2 border-white-800" : "bg-white border-b-2 border-gray-800"} sticky top-0 z-50 theme-transition`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"} flex items-center font-poppins theme-transition`}>
+            <Link 
+              to="/" 
+              onClick={handleLogoClick}
+              className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"} flex items-center font-poppins theme-transition`}
+            >
               <ShoppingBag className={`h-7 w-7 mr-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`} />
               <span>
                 SHOP<span className={theme === "dark" ? "text-gray-400" : "text-gray-500"}>EASE</span>
@@ -188,16 +230,19 @@ export default function UserLayout({ children }) {
                   )}
                 </div>
               ) : (
-                <Link
-                  to="/login"
-                  className={`${
-                    theme === "dark" 
-                      ? "bg-white text-black hover:bg-gray-200" 
-                      : "bg-gray-900 text-white hover:bg-gray-800"
-                  } px-4 py-2 rounded-[12px] transition-colors font-medium font-inter`}
-                >
-                  Sign in
-                </Link>
+                <>
+                  <Link
+                    to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                    className={`${
+                      theme === "dark" 
+                        ? "bg-white text-black hover:bg-gray-200" 
+                        : "bg-gray-900 text-white hover:bg-gray-800"
+                    } px-4 py-2 rounded-[12px] transition-colors font-medium font-inter`}
+                  >
+                    Sign in
+                  </Link>
+
+                </>
               )}
             </nav>
 
@@ -301,17 +346,28 @@ export default function UserLayout({ children }) {
                     </button>
                   </>
                 ) : (
-                  <Link
-                    to="/login"
-                    className={`${
-                      theme === "dark" 
-                        ? "bg-white text-black hover:bg-gray-200" 
-                        : "bg-gray-900 text-white hover:bg-gray-800"
-                    } px-4 py-2 rounded-[12px] transition-colors font-inter`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign in
-                  </Link>
+                  <>
+                    <Link
+                      to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                      className={`${
+                        theme === "dark" 
+                          ? "bg-white text-black hover:bg-gray-200" 
+                          : "bg-gray-900 text-white hover:bg-gray-800"
+                      } px-4 py-2 rounded-[12px] transition-colors font-inter`}
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      to={`/register?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                      className={`${
+                        theme === "dark" 
+                          ? "bg-white text-black hover:bg-gray-200" 
+                          : "bg-gray-900 text-white hover:bg-gray-800"
+                      } px-4 py-2 rounded-[12px] transition-colors font-inter`}
+                    >
+                      Sign up
+                    </Link>
+                  </>
                 )}
               </div>
             </div>
