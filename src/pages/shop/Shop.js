@@ -307,7 +307,7 @@ export default function Shop() {
     sliderRail: theme === "dark" ? "#8D8D8D" : "#D1D1D1",
     mobileFilterButton: theme === "dark" ? "bg-gray-900 border-gray-800" : "bg-white border-gray-300",
     addedToCartButton:
-      theme === "dark" ? "bg-green-900 text-white border-green-500" : "bg-green-100 text-green-800 border-green-300",
+      theme === "dark" ? "bg-green-600 text-white " : "bg-green-600 text-white ",
     signInButton:
       theme === "dark" ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300",
   }
@@ -578,7 +578,7 @@ export default function Shop() {
                         >
                           {addedToCart === product.id ? (
                             <>
-                              Added <Check size={16} />
+                              Added to Cart <Check size={16} />
                             </>
                           ) : (
                             <>
