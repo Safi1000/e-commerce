@@ -280,9 +280,9 @@ export default function ProductDetail() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={handleAddToCart}
-                      className={`w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 bg-green-900 text-black border border-green-500 ${
+                      className={`w-full py-2 rounded-[12px] transition-colors flex items-center justify-center font-inter gap-2 bg-green-600 text-white${
                         addedToCart
-                          ? "w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 bg-green-900 text-white border border-green-500"
+                          ? "w-full py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 bg-green-600 text-white font-inter "
                           : "font-inter bg-white text-black hover:bg-gray-200"
                       }`}
                     >
