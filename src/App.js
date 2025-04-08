@@ -35,12 +35,16 @@ import { AuthProvider } from "./contexts/AuthContext"
 import { CartProvider } from "./contexts/CartContext"
 import { ThemeProvider } from "./contexts/ThemeContext"
 
+// Components
+import ScrollToTop from "./components/ScrollToTop"
+
 function App() {
   return (
     <Router>
       <AuthProvider>
         <CartProvider>
           <ThemeProvider>
+            <ScrollToTop />
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />

@@ -1,17 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useCart } from "../../contexts/CartContext"
 import { useAuth } from "../../contexts/AuthContext"
 import { motion } from "framer-motion"
 import { ShoppingCart, Plus, Minus, X, ChevronRight, Tag } from "lucide-react"
+import { NewtonsCradle } from 'ldrs/react'
+import 'ldrs/react/NewtonsCradle.css'
 
 export default function Cart() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart()
   const { currentUser } = useAuth()
   const [couponCode, setCouponCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate loading state for cart initialization
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleApplyCoupon = () => {
     // Simple coupon code implementation
@@ -39,6 +50,22 @@ export default function Cart() {
   // Placeholder image URL helper function
   const getPlaceholderImage = (width, height) => {
     return `https://via.placeholder.com/${width}x${height}/1a1a1a/ffffff?text=ShopEase`
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-black text-white min-h-screen">
+        <div className="container mx-auto px-4 py-12">
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <NewtonsCradle
+              size="78"
+              speed="1.4"
+              color="white" 
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

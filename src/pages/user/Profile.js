@@ -8,6 +8,8 @@ import { db } from "../../firebase/config"
 import { useAuth } from "../../contexts/AuthContext"
 import { motion } from "framer-motion"
 import { User, ShoppingCart, ShoppingBag, LogOut, Check, AlertTriangle } from "lucide-react"
+import { NewtonsCradle } from 'ldrs/react'
+import 'ldrs/react/NewtonsCradle.css'
 
 export default function Profile() {
   const { currentUser, logout } = useAuth()
@@ -126,8 +128,12 @@ export default function Profile() {
     return (
       <div className="bg-black text-white min-h-screen">
         <div className="container mx-auto px-4 py-12">
-          <div className="flex justify-center items-center h-64">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <NewtonsCradle
+              size="78"
+              speed="1.4"
+              color="white" 
+            />
           </div>
         </div>
       </div>
