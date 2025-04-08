@@ -10,6 +10,8 @@ import { getImage } from "../../utils/imageApi"
 import { motion } from "framer-motion"
 import { Search, Filter, X, Check, ChevronRight, ShoppingBag } from "lucide-react"
 import { Slider } from '@mui/material';
+import { NewtonsCradle } from 'ldrs/react'
+import 'ldrs/react/NewtonsCradle.css'
 
 export default function Shop() {
   const [products, setProducts] = useState([])
@@ -30,6 +32,7 @@ export default function Shop() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
+      window.scrollTo(0, 0) // Scroll to top when loading
       await Promise.all([fetchCategories(), fetchProducts()])
       setLoading(false)
     }
@@ -477,8 +480,12 @@ export default function Shop() {
           {/* Product Grid */}
           <div className="flex-1">
             {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+              <div className="flex justify-center items-center min-h-[60vh]">
+                <NewtonsCradle
+                  size="78"
+                  speed="1.4"
+                  color="white" 
+                />
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="bg-gray-900 border border-gray-800 rounded-[12px] p-12 text-center">

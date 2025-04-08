@@ -9,6 +9,8 @@ import { useCart } from "../../contexts/CartContext"
 import { getImage } from "../../utils/imageApi"
 import { motion } from "framer-motion"
 import { ShoppingCart, ShoppingBag, ChevronLeft, Check, AlertTriangle, Plus, Minus } from "lucide-react"
+import { NewtonsCradle } from 'ldrs/react'
+import 'ldrs/react/NewtonsCradle.css'
 
 export default function ProductDetail() {
   const { id } = useParams()
@@ -24,6 +26,8 @@ export default function ProductDetail() {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      setLoading(true)
+      window.scrollTo(0, 0) // Scroll to top when loading
       try {
         const docRef = doc(db, "products", id)
         const docSnap = await getDoc(docRef)
@@ -110,8 +114,12 @@ export default function ProductDetail() {
     return (
       <div className="bg-black text-white min-h-screen">
         <div className="container mx-auto px-4 py-12">
-          <div className="flex justify-center items-center h-64">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <NewtonsCradle
+              size="78"
+              speed="1.4"
+              color="white" 
+            />
           </div>
         </div>
       </div>
