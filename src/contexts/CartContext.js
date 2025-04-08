@@ -114,6 +114,8 @@ export function CartProvider({ children }) {
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
           quantity: updatedItems[existingItemIndex].quantity + quantity,
+          // Ensure we keep the imageUrl when updating quantity
+          imageUrl: product.imageUrl || updatedItems[existingItemIndex].imageUrl
         }
         return updatedItems
       } else {
@@ -124,7 +126,7 @@ export function CartProvider({ children }) {
             id: product.id,
             name: product.name,
             price: product.price,
-            imageUrl: product.imageUrl,
+            imageUrl: product.imageUrl, // Store the imageUrl from the product
             quantity,
           },
         ]
