@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "https://safi1000.github.io/e-commerce/static/css/main.ffba915c.css",
-    "main.js": "https://safi1000.github.io/e-commerce/static/js/main.a2705a8a.js",
+    "main.js": "https://safi1000.github.io/e-commerce/static/js/main.ec7e5703.js",
     "index.html": "https://safi1000.github.io/e-commerce/index.html",
     "main.ffba915c.css.map": "https://safi1000.github.io/e-commerce/static/css/main.ffba915c.css.map",
-    "main.a2705a8a.js.map": "https://safi1000.github.io/e-commerce/static/js/main.a2705a8a.js.map"
+    "main.ec7e5703.js.map": "https://safi1000.github.io/e-commerce/static/js/main.ec7e5703.js.map"
   },
   "entrypoints": [
     "static/css/main.ffba915c.css",
-    "static/js/main.a2705a8a.js"
+    "static/js/main.ec7e5703.js"
   ]
 }
