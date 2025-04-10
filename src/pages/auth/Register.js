@@ -99,7 +99,7 @@ export default function Register() {
         <img
           src={backgroundImage || "/placeholder.svg"}
           alt="Fashion"
-          className="absolute inset-0 w-full h-full object-cover border-r border-white"
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="text-center p-8">
@@ -112,6 +112,23 @@ export default function Register() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Animated Divider */}
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-full w-[4px] hidden md:block overflow-hidden">
+        <motion.div
+          initial={{ y: "-100%" }}
+          animate={{ 
+            y: "100%",
+          }}
+          transition={{ 
+            repeat: Infinity,
+            duration: 3,
+            ease: "linear"
+          }}
+          className="absolute top-0 w-full h-full bg-gradient-to-b from-transparent via-white to-transparent"
+        />
+        <div className="absolute inset-0 bg-gray-800 opacity-20"></div>
       </div>
 
       {/* Right side - Register form */}
