@@ -7,17 +7,32 @@ import { useAuth } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
 import { motion } from "framer-motion"
 import { ChevronLeft, CreditCard, ShoppingBag, CheckCircle } from "lucide-react"
-import { collection, addDoc, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore"
+import { collection, addDoc, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "../../firebase/config"
 import MaterialToast from "../../components/layouts/MaterialToast"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 
 export default function Checkout() {
-  const { currentUser, isGuest, guestId, getEffectiveUserId } = useAuth()
+  const { currentUser, isGuest, guestId, getEffectiveUserId, enableGuestMode } = useAuth()
   const { cartItems, cartTotal, clearCart } = useCart()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const effectiveUserId = getEffectiveUserId()
+
+  // Ensure guest mode is enabled if the user is not logged in
+  useEffect(() => {
+    const ensureGuestMode = async () => {
+      if (!currentUser && !isGuest) {
+        try {
+          await enableGuestMode();
+        } catch (error) {
+          console.error("Error enabling guest mode:", error);
+        }
+      }
+    };
+    
+    ensureGuestMode();
+  }, [currentUser, isGuest, enableGuestMode]);
 
   // Use React Query to fetch user profile data for pre-filling the form
   const { data: userData } = useQuery({
@@ -75,22 +90,22 @@ export default function Checkout() {
   })
 
   // Also fetch guest orders if in guest mode
-  const guestOrdersKey = isGuest && guestId ? ['guestOrders', guestId] : null
-  const { data: guestOrders = [] } = useQuery({
-    queryKey: guestOrdersKey,
+  const { data: guestOrders } = useQuery({
+    queryKey: ['guestOrders', guestId],
     queryFn: async () => {
       if (!guestId || !isGuest) return []
       
       try {
-        const ordersRef = collection(db, "orders")
-        const q = query(
-          ordersRef, 
-          where("userId", "==", guestId), 
-          orderBy("createdAt", "desc"), 
+        const ordersQuery = query(
+          collection(db, "orders"),
+          where("userId", "==", guestId),
+          where("isGuestOrder", "==", true),
+          orderBy("createdAt", "desc"),
           limit(5)
         )
-        const querySnapshot = await getDocs(q)
-        return querySnapshot.docs.map(doc => ({
+        
+        const querySnapshot = await getDocs(ordersQuery)
+        return querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data()
         }))
@@ -101,9 +116,8 @@ export default function Checkout() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 30 * 60 * 1000, // 30 minutes
-    enabled: !!guestOrdersKey,
-    retry: 1,
-    retryDelay: 1000
+    enabled: !!(guestId && isGuest),
+    retry: 1
   })
 
   // Combine orders for display
@@ -129,12 +143,12 @@ export default function Checkout() {
 
   // Pre-fill form with user data when available
   useEffect(() => {
-    if (userData && currentUser) {
+    if (userData) {
       setFormData(prevData => ({
         ...prevData,
-        firstName: userData.firstName || "",
-        lastName: userData.lastName || "",
-        email: currentUser.email || "",
+        firstName: userData.firstName || userData.name?.split(' ')[0] || "",
+        lastName: userData.lastName || (userData.name?.split(' ').length > 1 ? userData.name?.split(' ').slice(1).join(' ') : "") || "",
+        email: currentUser?.email || userData.email || "",
         address: userData.address || "",
         city: userData.city || "",
         state: userData.state || "",
@@ -277,6 +291,18 @@ export default function Checkout() {
     setError("");
     
     try {
+      // Ensure we have a valid effectiveUserId for guest users
+      if (!effectiveUserId && isGuest) {
+        // Try enabling guest mode again to get a valid ID
+        await enableGuestMode();
+        
+        // If still no effectiveUserId, create a fallback
+        if (!getEffectiveUserId()) {
+          console.error("No effective user ID available");
+          throw new Error("Unable to process order without user identification");
+        }
+      }
+      
       // Calculate order totals
       const subtotal = cartTotal
       const shipping = subtotal > 100 ? 0 : 10
@@ -314,14 +340,38 @@ export default function Checkout() {
           total,
         },
         status: "pending",
-        userId: effectiveUserId,
+        userId: getEffectiveUserId() || guestId,
         isGuestOrder: isGuest,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
-      // Save order to Firestore
-      const orderRef = await addDoc(collection(db, "orders"), orderData)
+      // First try saving to Firestore
+      let orderRef;
+      try {
+        // Save order to Firestore
+        orderRef = await addDoc(collection(db, "orders"), orderData)
+      } catch (firestoreError) {
+        // If Firestore fails due to permissions, save locally
+        console.error("Failed to save order to Firestore:", firestoreError);
+        
+        // Generate a local ID
+        const localOrderId = `local-order-${Date.now()}`;
+        
+        // Save to localStorage as fallback
+        const existingOrders = JSON.parse(localStorage.getItem("guestOrders") || "[]");
+        const newOrdersList = [
+          { 
+            id: localOrderId,
+            ...orderData
+          },
+          ...existingOrders
+        ];
+        localStorage.setItem("guestOrders", JSON.stringify(newOrdersList));
+        
+        // Use the local ID
+        orderRef = { id: localOrderId };
+      }
 
       // Invalidate the relevant orders query to trigger a refetch
       if (currentUser) {
@@ -346,6 +396,66 @@ export default function Checkout() {
         },
         date: new Date().toLocaleDateString(),
       });
+
+      // Update user profile with shipping info for future use
+      if (effectiveUserId) {
+        try {
+          const userDocRef = doc(db, "users", effectiveUserId);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            // Update existing document
+            await setDoc(userDocRef, {
+              ...userDoc.data(),
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              address: formData.address,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.zipCode,
+              country: formData.country,
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+          } else if (isGuest) {
+            // Create new document for guest
+            await setDoc(userDocRef, {
+              uid: effectiveUserId,
+              name: `${formData.firstName} ${formData.lastName}`,
+              email: formData.email,
+              role: "guest",
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              address: formData.address,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.zipCode,
+              country: formData.country,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
+          }
+          
+          // Also save to localStorage for backup
+          localStorage.setItem("guestData", JSON.stringify({
+            uid: effectiveUserId,
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            role: "guest",
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            country: formData.country
+          }));
+          
+          // Invalidate user data query
+          queryClient.invalidateQueries(['userData', effectiveUserId]);
+        } catch (error) {
+          console.error("Failed to update user profile:", error);
+        }
+      }
 
       // Clear the cart
       clearCart()
@@ -430,7 +540,7 @@ export default function Checkout() {
       setShouldNavigate(true);
       
     } catch (error) {
-      console.error("Error placing order:", error)
+      console.error("Error placing order:", error);
       setToast({
         visible: true,
         message: "There was a problem processing your order. Please try again.",
@@ -438,7 +548,7 @@ export default function Checkout() {
       });
       setPreventRedirect(false);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 

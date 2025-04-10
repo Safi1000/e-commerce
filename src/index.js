@@ -6,6 +6,11 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import App from "./App"
 import "./index.css"
+import Typography from '@mui/material/Typography'; // Correct import for Typography
+import { createFilterOptions } from '@mui/material/useAutocomplete'; // Correct import for createFilterOptions
+import Zoom from '@mui/material/Zoom'; // Correct import for Zoom
+import { usePagination } from '@mui/material/usePagination'; // Correct import for usePagination
+
 
 // Create a client with optimized settings to prevent infinite loops
 const queryClient = new QueryClient({

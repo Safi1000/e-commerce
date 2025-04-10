@@ -54,18 +54,10 @@ function App() {
               <Route path="/" element={<UserLayout><Home /></UserLayout>} />
               <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
               <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
+              <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
+              <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
               
-              {/* Protected Routes */}
-              <Route path="/cart" element={
-                <PrivateRoute>
-                  <UserLayout><Cart /></UserLayout>
-                </PrivateRoute>
-              } />
-              <Route path="/checkout" element={
-                <PrivateRoute>
-                  <UserLayout><Checkout /></UserLayout>
-                </PrivateRoute>
-              } />
+              {/* Protected Routes - only for authenticated users */}
               <Route path="/profile" element={
                 <PrivateRoute>
                   <UserLayout><Profile /></UserLayout>
@@ -94,14 +86,28 @@ function App() {
   )
 }
 
-// Private route component
+// Private route component - allows both authenticated users and guests
 function PrivateRoute({ children }) {
   const [user, setUser] = useState(null)
+  const [isGuest, setIsGuest] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const unsubscribe = onAuthChange((currentUser) => {
       setUser(currentUser)
+      
+      // If no user is authenticated, check if we're in guest mode
+      if (!currentUser) {
+        const guestId = localStorage.getItem("guestId");
+        const guestData = localStorage.getItem("guestData");
+        
+        if (guestId && (guestData || localStorage.getItem("cart"))) {
+          setIsGuest(true);
+        }
+      } else {
+        setIsGuest(false);
+      }
+      
       setLoading(false)
     })
     return () => unsubscribe()
@@ -115,8 +121,10 @@ function PrivateRoute({ children }) {
     )
   }
 
-  if (!user) {
-    return <Navigate to="/" />
+  // Allow access if user is authenticated OR in guest mode
+  if (!user && !isGuest) {
+    // If trying to access a page that requires an account, redirect to login
+    return <Navigate to="/login" />
   }
 
   return children

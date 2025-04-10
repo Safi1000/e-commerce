@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
 import { motion } from "framer-motion"
-import { ChevronLeft, Mail, Lock, User } from "lucide-react"
+import { ChevronLeft, Mail, Lock, User, UserPlus } from "lucide-react"
 import { getImage } from "../../utils/imageApi"
 import { NewtonsCradle } from 'ldrs/react'
 import 'ldrs/react/NewtonsCradle.css'
@@ -16,17 +16,38 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [guestLoading, setGuestLoading] = useState(false)
   const [backgroundImage, setBackgroundImage] = useState("")
   const [validationErrors, setValidationErrors] = useState({})
-  const { register } = useAuth()
+  const [pageLoading, setPageLoading] = useState(true)
+  const { register, enableGuestMode } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
     const fetchImage = async () => {
-      const imageUrl = await getImage("technology background", { orientation: 'landscape' })
-      setBackgroundImage(imageUrl)
+      try {
+        setPageLoading(true)
+        const imageUrl = await getImage("technology background", { orientation: 'landscape' })
+        setBackgroundImage(imageUrl)
+        
+        // Create an Image object to ensure the image is fully loaded before rendering
+        const img = new Image()
+        img.src = imageUrl
+        img.onload = () => {
+          setPageLoading(false)
+        }
+        img.onerror = () => {
+          // If image fails to load, still hide the loading spinner after a delay
+          setTimeout(() => setPageLoading(false), 500)
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error)
+        // If there's an error, still hide the loading spinner after a delay
+        setTimeout(() => setPageLoading(false), 500)
+      }
     }
+    
     fetchImage()
   }, [])
 
@@ -87,9 +108,51 @@ export default function Register() {
     }
   }
 
+  const handleGuestMode = async () => {
+    try {
+      setError("")
+      setGuestLoading(true)
+      
+      // Add 1 second timeout to prevent flash of error message
+      const result = await enableGuestMode()
+      
+      if (result) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const redirectPath = new URLSearchParams(location.search).get('redirect') || '/'
+        navigate(redirectPath)
+      } else {
+        // If no result but no error thrown, still treat as success
+        // This handles the case where the function completes but returns null/undefined
+        const redirectPath = new URLSearchParams(location.search).get('redirect') || '/'
+        navigate(redirectPath)
+      }
+    } catch (error) {
+      console.error("Guest mode error:", error)
+      setError("Failed to enable guest mode. Please try again.")
+    } finally {
+      setGuestLoading(false)
+    }
+  }
+
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  }
+  
+  // Show loading spinner until page is ready
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center">
+          <NewtonsCradle
+            size="80"
+            speed="1.4"
+            color="white"
+          />
+          <p className="mt-4 text-white font-inter">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -277,6 +340,38 @@ export default function Register() {
                 </button>
               </div>
             </form>
+
+            <div className="mt-6 text-center relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-4 bg-gray-900 text-gray-400 text-sm">OR</span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={handleGuestMode}
+                disabled={guestLoading}
+                className="w-full bg-transparent border border-gray-600 text-gray-300 px-4 py-3 rounded-[12px] hover:bg-gray-800 hover:border-gray-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed font-inter flex items-center justify-center gap-2"
+              >
+                {guestLoading ? (
+                  <span className="flex items-center justify-center">
+                    <NewtonsCradle
+                      size="30"
+                      speed="1.4"
+                      color="white"
+                    />
+                  </span>
+                ) : (
+                  <>
+                    <User className="h-5 w-5" />
+                    CONTINUE AS GUEST
+                  </>
+                )}
+              </button>
+            </div>
 
             <div className="mt-6 text-center">
               <p className="text-gray-400 font-inter">

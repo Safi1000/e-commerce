@@ -104,7 +104,7 @@ export default function Shop() {
   const location = useLocation()
   const navigate = useNavigate()
   const { addToCart } = useCart()
-  const { currentUser } = useAuth()
+  const { currentUser, isGuest } = useAuth()
 
   // Fetch products with React Query and image caching
   const { data: products = [], isLoading: productsLoading } = useQuery({
@@ -628,27 +628,32 @@ export default function Shop() {
                     transition={{ duration: 0.3 }}
                     className={`${styles.card} ${styles.cardHover} rounded-[12px] overflow-hidden transition-colors`}
                   >
-                    <div className={`h-64 ${theme === "dark" ? "bg-black" : "bg-gray-100"} relative overflow-hidden`}>
-                      <img
-                        src={product.imageUrl || getPlaceholderImage(400, 300)}
-                        alt={product.name}
-                        className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                        loading="lazy"
-                        onLoad={(e) => {
-                          // Add the image to the cache service
-                          if (e.target.src && !e.target.src.includes('placeholder')) {
-                            imageCacheService.preloadImage(e.target.src);
-                          }
-                        }}
-                        onError={(e) => {
-                          // Handle image loading errors
-                          console.error('Error loading image:', e.target.src);
-                          e.target.src = getPlaceholderImage(400, 300);
-                        }}
-                      />
+                    <div className={`h-64 ${theme === "dark" ? "bg-black" : "bg-gray-100"} relative overflow-hidden group`}>
+                      <Link to={`/product/${product.id}`} className="block h-full w-full cursor-pointer">
+                        <img
+                          src={product.imageUrl || getPlaceholderImage(400, 300)}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          loading="lazy"
+                          onLoad={(e) => {
+                            // Add the image to the cache service
+                            if (e.target.src && !e.target.src.includes('placeholder')) {
+                              imageCacheService.preloadImage(e.target.src);
+                            }
+                          }}
+                          onError={(e) => {
+                            // Handle image loading errors
+                            console.error('Error loading image:', e.target.src);
+                            e.target.src = getPlaceholderImage(400, 300);
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                      </Link>
                     </div>
                     <div className="p-5">
-                      <h3 className={`${styles.text} font-medium text-lg mb-2 font-inter`}>{product.name}</h3>
+                      <Link to={`/product/${product.id}`} className="block">
+                        <h3 className={`${styles.text} font-medium text-lg mb-2 font-inter hover:underline`}>{product.name}</h3>
+                      </Link>
                       <p className={`${styles.subtext} text-sm mb-3 font-inter`}>{product.category}</p>
                       <div className="flex justify-between items-center mb-3">
                         <span className={`${styles.text} text-xl font-bold font-inter`}>
@@ -666,7 +671,7 @@ export default function Shop() {
                         <ChevronRight size={16} />
                       </Link>
 
-                      {currentUser ? (
+                      {currentUser || isGuest ? (
                         <button
                           onClick={() => handleAddToCart(product)}
                           className={`w-full h-full px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter ${

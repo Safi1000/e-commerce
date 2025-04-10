@@ -64,7 +64,7 @@ const fetchHeroImages = async () => {
 export default function Home() {
   const [addedToCart, setAddedToCart] = useState(null)
   const { addToCart } = useCart()
-  const { currentUser } = useAuth()
+  const { currentUser, isGuest } = useAuth()
   const { theme } = useTheme()
 
   const isDark = theme === "dark"
@@ -354,7 +354,7 @@ export default function Home() {
                         View Details
                         <ChevronRight size={16} />
                       </Link>
-                      {currentUser ? (
+                      {(currentUser || isGuest) ? (
                         <button
                           onClick={() => handleAddToCart(product)}
                           className={`w-full h-full px-4 py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter ${

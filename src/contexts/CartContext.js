@@ -17,10 +17,33 @@ export function CartProvider({ children }) {
   const { currentUser, guestId, isGuest, getEffectiveUserId } = useAuth()
   const queryClient = useQueryClient()
   const effectiveUserId = getEffectiveUserId()
+  
+  // Track whether the user state has changed (switching between guest/logged-in)
+  const [userStateKey, setUserStateKey] = useState(isGuest ? `guest-${guestId}` : currentUser?.uid || 'anonymous')
+  
+  // Update the user state key when user authentication state changes
+  useEffect(() => {
+    const newKey = isGuest ? `guest-${guestId}` : currentUser?.uid || 'anonymous'
+    if (newKey !== userStateKey) {
+      // Invalidate the previous user's cart query before changing state
+      if (userStateKey !== 'anonymous') {
+        queryClient.invalidateQueries(['cart', userStateKey])
+      }
+      
+      setUserStateKey(newKey)
+      // Clear current cart when switching between users
+      setCartItems([])
+      
+      // Force a refetch for the new user state
+      if (newKey !== 'anonymous') {
+        queryClient.invalidateQueries(['cart', isGuest ? guestId : currentUser?.uid])
+      }
+    }
+  }, [isGuest, currentUser, guestId, userStateKey, queryClient])
 
   // Use React Query to fetch cart data for both registered and guest users
   const { data: firestoreCart, isLoading } = useQuery({
-    queryKey: ['cart', effectiveUserId],
+    queryKey: ['cart', effectiveUserId, isGuest],
     queryFn: async () => {
       if (!effectiveUserId) return null
       
@@ -52,27 +75,30 @@ export function CartProvider({ children }) {
         isGuestCart: isGuest
       })
       
-      // Also save to localStorage as backup
-      localStorage.setItem("cart", JSON.stringify(items))
+      // Also save to localStorage as backup, but use different keys for guest and user
+      if (isGuest) {
+        localStorage.setItem(`guest-cart-${guestId}`, JSON.stringify(items))
+      } else {
+        localStorage.setItem(`user-cart-${currentUser?.uid}`, JSON.stringify(items))
+      }
     } catch (error) {
       console.error("Error saving cart to Firestore:", error)
-      localStorage.setItem("cart", JSON.stringify(items))
+      // Save to localStorage with appropriate key as backup
+      if (isGuest) {
+        localStorage.setItem(`guest-cart-${guestId}`, JSON.stringify(items))
+      } else if (currentUser) {
+        localStorage.setItem(`user-cart-${currentUser.uid}`, JSON.stringify(items))
+      } else {
+        localStorage.setItem("cart", JSON.stringify(items))
+      }
     }
-  }, [effectiveUserId, isGuest])
+  }, [effectiveUserId, isGuest, guestId, currentUser])
 
   // Use mutation without automatic invalidation to prevent loops
   const saveCartMutation = useMutation({
     mutationFn: saveCartToFirestore,
     // Remove the onSuccess handler to prevent loops
   })
-
-  // Initialize guest mode if needed
-  useEffect(() => {
-    // If we have a guest ID but no current user, make sure guest cart is loaded
-    if (isGuest && guestId && !currentUser) {
-      // The cart will be loaded via the useQuery hook with effectiveUserId
-    }
-  }, [isGuest, guestId, currentUser])
 
   // Load cart data when user changes or firestoreCart updates
   useEffect(() => {
@@ -83,8 +109,16 @@ export function CartProvider({ children }) {
           if (firestoreCart) {
             setCartItems(firestoreCart)
           } else {
-            // Check localStorage for potential migration
-            const localCart = localStorage.getItem("cart")
+            // Check localStorage for potential migration with appropriate key
+            let localCart
+            if (isGuest) {
+              localCart = localStorage.getItem(`guest-cart-${guestId}`)
+            } else if (currentUser) {
+              localCart = localStorage.getItem(`user-cart-${currentUser.uid}`)
+            } else {
+              localCart = localStorage.getItem("cart")
+            }
+            
             if (localCart) {
               const parsedCart = JSON.parse(localCart)
               setCartItems(parsedCart)
@@ -92,14 +126,16 @@ export function CartProvider({ children }) {
               // Save local cart to Firestore but don't trigger state updates
               saveCartToFirestore(parsedCart)
               
-              // Clear localStorage cart after migration
-              localStorage.removeItem("cart")
+              // Clear old localStorage cart key after migration
+              if (!isGuest && !currentUser) {
+                localStorage.removeItem("cart")
+              }
             } else {
               setCartItems([])
             }
           }
         } else {
-          // No effective user ID, get cart from localStorage
+          // No effective user ID, get cart from localStorage with fallback to the generic key
           const localCart = localStorage.getItem("cart")
           if (localCart) {
             setCartItems(JSON.parse(localCart))
@@ -109,8 +145,16 @@ export function CartProvider({ children }) {
         }
       } catch (error) {
         console.error("Error loading cart:", error)
-        // Fallback to localStorage if something fails
-        const localCart = localStorage.getItem("cart")
+        // Fallback to localStorage if something fails, trying user-specific keys first
+        let localCart
+        if (isGuest) {
+          localCart = localStorage.getItem(`guest-cart-${guestId}`)
+        } else if (currentUser) {
+          localCart = localStorage.getItem(`user-cart-${currentUser.uid}`)
+        } else {
+          localCart = localStorage.getItem("cart")
+        }
+        
         if (localCart) {
           setCartItems(JSON.parse(localCart))
         }
@@ -118,7 +162,7 @@ export function CartProvider({ children }) {
     }
 
     loadCart()
-  }, [effectiveUserId, firestoreCart, saveCartToFirestore])
+  }, [effectiveUserId, firestoreCart, saveCartToFirestore, isGuest, currentUser, guestId, userStateKey])
 
   // Save cart data when it changes - with a ref to track if it's from user action
   const [shouldSaveCart, setShouldSaveCart] = useState(false)

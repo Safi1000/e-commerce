@@ -2,18 +2,75 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if the request is from a guest user with a valid guest ID
+    function isValidGuest(guestId) {
+      // Any string starting with "guest-" is considered a valid guest ID pattern
+      return guestId.matches('^guest-[a-zA-Z0-9-_]+$');
+    }
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    // Users collection rules
+    match /users/{userId} {
+      // Allow users to read their own data
+      allow read: if isOwner(userId);
+      // Allow guest users to read and update their own data
+      allow read, write: if isValidGuest(userId);
+      // Allow creation of new user documents
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Allow users to update their own data
+      allow update: if isOwner(userId) && 
+        // Don't allow changing user role
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || 
+        // Unless they already have the admin role
+        (resource.data.role == 'admin' && request.resource.data.role == 'admin'));
+    }
+
+    // Carts collection rules
+    match /carts/{cartId} {
+      // Allow users to read their own cart
+      allow read, write: if (isAuthenticated() && request.auth.uid == cartId) || 
+                          isValidGuest(cartId);
+    }
+
+    // Orders collection rules
+    match /orders/{orderId} {
+      // Allow users to create orders
+      allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) || 
+                    (isValidGuest(request.resource.data.userId));
+                    
+      // Allow users to read their own orders
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) ||
+                  (isValidGuest(resource.data.userId));
+    }
+
+    // Products collection rules
+    match /products/{productId} {
+      // Anyone can read products
+      allow read: if true;
+      // Only admins can create/update/delete products
+      // To be implemented with admin authentication
+    }
+
+    // Categories collection rules
+    match /categories/{categoryId} {
+      // Anyone can read categories
+      allow read: if true;
+      // Only admins can create/update/delete categories
+      // To be implemented with admin authentication
+    }
+
+    // Default deny
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 4, 28);
+      allow read, write: if false;
     }
   }
 }

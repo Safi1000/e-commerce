@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query"
 
 export default function Cart() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal, loading: cartLoading } = useCart()
-  const { currentUser } = useAuth()
+  const { currentUser, isGuest } = useAuth()
   const [couponCode, setCouponCode] = useState("")
   const [discount, setDiscount] = useState(0)
   
@@ -295,7 +295,7 @@ export default function Cart() {
                     </button>
                   </div>
 
-                  {currentUser ? (
+                  {currentUser || isGuest ? (
                     <Link
                       to="/checkout"
                       className="bg-white text-black w-full py-3 rounded-[12px] hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-inter"
@@ -304,13 +304,33 @@ export default function Cart() {
                       <ChevronRight size={18} />
                     </Link>
                   ) : (
-                    <Link
-                      to="/login"
-                      className="bg-gray-800 text-gray-300 w-full py-3 rounded-[12px] hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
-                    >
-                      Sign In to Checkout
-                      <ChevronRight size={18} />
-                    </Link>
+                    <div className="space-y-3">
+                      <Link
+                        to={`/login?redirect=${encodeURIComponent("/checkout")}`}
+                        className="bg-white text-black w-full py-3 rounded-[12px] hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-inter"
+                      >
+                        Sign In to Checkout
+                        <ChevronRight size={18} />
+                      </Link>
+                      <Link
+                        to={`/register?redirect=${encodeURIComponent("/checkout")}`}
+                        className="bg-gray-800 text-gray-300 w-full py-3 rounded-[12px] hover:bg-gray-700 border border-gray-700 transition-colors flex items-center justify-center gap-2 font-inter"
+                      >
+                        Create Account to Checkout
+                        <ChevronRight size={18} />
+                      </Link>
+                      <Link
+                        to={`/login?redirect=${encodeURIComponent("/checkout")}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.location.href = "/checkout";
+                        }}
+                        className="bg-amber-500 text-black w-full py-3 rounded-[12px] hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 font-inter"
+                      >
+                        Checkout as Guest
+                        <ChevronRight size={18} />
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>

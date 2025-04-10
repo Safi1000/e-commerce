@@ -4,14 +4,14 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
-import { ShoppingBag, Search, User, LogOut, Menu, X, ChevronDown, Home, ShoppingCart, Settings } from "lucide-react"
+import { ShoppingBag, Search, User, LogOut, Menu, X, ChevronDown, Home, ShoppingCart, Settings, UserPlus } from "lucide-react"
 import ThemeToggle from "../ThemeToggle"
 import { useTheme } from "../../contexts/ThemeContext"
 import { NewtonsCradle } from 'ldrs/react'
 import 'ldrs/react/NewtonsCradle.css'
 
 export default function UserLayout({ children }) {
-  const { currentUser, logout, userRole, isAdmin } = useAuth()
+  const { currentUser, logout, userRole, isAdmin, isGuest, guestId } = useAuth()
   const { itemCount } = useCart()
   const { theme } = useTheme()
   const navigate = useNavigate()
@@ -167,65 +167,100 @@ export default function UserLayout({ children }) {
               <Link to="/shop" className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-medium font-inter`}>
                 Shop
               </Link>
-              {currentUser && (
-                <Link
-                  to="/cart"
-                  className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} transition-colors font-medium font-inter flex items-center`}
-                >
-                  Cart
-                  {itemCount > 0 && (
-                    <span className={`ml-2 ${theme === "dark" ? "bg-white text-black" : "bg-gray-900 text-white"} text-xs rounded-full h-5 w-5 flex items-center justify-center`}>
-                      {itemCount}
-                    </span>
-                  )}
-                </Link>
-              )}
+              {/* Cart visible for both logged in and guest users */}
+              <Link
+                to="/cart"
+                className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>Cart</span>
+                {itemCount > 0 && (
+                  <span className={`ml-2 ${theme === "dark" ? "bg-white text-black" : "bg-gray-900 text-white"} text-xs rounded-full h-5 w-5 flex items-center justify-center`}>
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
 
               {/* Add Theme Toggle */}
               <ThemeToggle />
 
-              {currentUser ? (
+              {currentUser || isGuest ? (
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     className={`flex items-center ${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} focus:outline-none`}
                   >
                     <div className={`h-8 w-8 rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} flex items-center justify-center text-sm font-medium mr-1`}>
-                      {currentUser.displayName?.charAt(0) || <User className="h-4 w-4" />}
+                      {isGuest ? (
+                        <User className="h-4 w-4" />
+                      ) : (
+                        currentUser.displayName?.charAt(0) || <User className="h-4 w-4" />
+                      )}
                     </div>
                     <span className="font-medium font-inter">
-                      {currentUser.displayName?.split(" ")[0] || "Account"}
+                      {isGuest ? (
+                        "Guest"
+                      ) : (
+                        currentUser.displayName?.split(" ")[0] || "Account"
+                      )}
                     </span>
+                    {isGuest && (
+                      <span className="ml-2 px-2 py-1 text-xs bg-amber-500 text-black rounded-full">Guest</span>
+                    )}
                     <ChevronDown className="h-4 w-4 ml-1" />
                   </button>
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-[12px] shadow-lg py-1 z-10">
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Profile
-                      </Link>
-                      {/* Add Admin Dashboard Link in dropdown too */}
-                      {isAdmin && (
-                        <Link
-                          to="/admin"
-                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Admin Dashboard
-                        </Link>
+                      {isGuest ? (
+                        <>
+                          <Link
+                            to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                            className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter flex items-center gap-2"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <User className="h-4 w-4" />
+                            Sign in
+                          </Link>
+                          <Link
+                            to={`/register?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                            className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter flex items-center gap-2"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <UserPlus className="h-4 w-4" />
+                            Create Account
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            to="/profile"
+                            className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            Profile
+                          </Link>
+                          {/* Add Admin Dashboard Link in dropdown too */}
+                          {isAdmin && (
+                            <Link
+                              to="/admin"
+                              className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter"
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              Admin Dashboard
+                            </Link>
+                          )}
+                          <button
+                            onClick={() => {
+                              handleLogout()
+                              setIsMenuOpen(false)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter"
+                          >
+                            Sign out
+                          </button>
+                        </>
                       )}
-                      <button
-                        onClick={() => {
-                          handleLogout()
-                          setIsMenuOpen(false)
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors font-inter"
-                      >
-                        Sign out
-                      </button>
                     </div>
                   )}
                 </div>
@@ -241,7 +276,6 @@ export default function UserLayout({ children }) {
                   >
                     Sign in
                   </Link>
-
                 </>
               )}
             </nav>
@@ -299,21 +333,29 @@ export default function UserLayout({ children }) {
                   <ShoppingBag className="h-5 w-5" />
                   Shop
                 </Link>
-                {currentUser && (
-                  <Link
-                    to="/cart"
-                    className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    <span>Cart</span>
-                    {itemCount > 0 && (
-                      <span className={`ml-2 ${theme === "dark" ? "bg-white text-black" : "bg-gray-900 text-white"} text-xs rounded-full h-5 w-5 flex items-center justify-center`}>
-                        {itemCount}
-                      </span>
-                    )}
-                  </Link>
+                {/* Cart visible for both logged in and guest users */}
+                <Link
+                  to="/cart"
+                  className={`${theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"} py-2 font-inter flex items-center gap-2`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Cart</span>
+                  {itemCount > 0 && (
+                    <span className={`ml-2 ${theme === "dark" ? "bg-white text-black" : "bg-gray-900 text-white"} text-xs rounded-full h-5 w-5 flex items-center justify-center`}>
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+                
+                {isGuest && (
+                  <div className="flex items-center gap-2 py-2">
+                    <User className="h-5 w-5 text-amber-500" />
+                    <span className="font-inter">Guest Mode</span>
+                    <span className="ml-2 px-2 py-1 text-xs bg-amber-500 text-black rounded-full font-bold">Guest</span>
+                  </div>
                 )}
+
                 {currentUser ? (
                   <>
                     <Link
@@ -345,7 +387,7 @@ export default function UserLayout({ children }) {
                       Sign out
                     </button>
                   </>
-                ) : (
+                ) : !isGuest && (
                   <>
                     <Link
                       to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}

@@ -17,7 +17,7 @@ export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { currentUser } = useAuth()
+  const { currentUser, isGuest } = useAuth()
   const { addToCart } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
@@ -238,7 +238,7 @@ export default function ProductDetail() {
 
               <div className="border-t border-gray-800 my-6 pt-6">
                 <p className="text-gray-300 mb-6 font-inter leading-relaxed">
-                  {product.description || "No description available for this product."}
+                  {product.description }
                 </p>
               </div>
 
@@ -253,7 +253,7 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              {currentUser ? (
+              {currentUser || isGuest ? (
                 <div className="mb-8">
                   <h3 className="text-xl font-bold mb-3 font-poppins">QUANTITY</h3>
                   <div className="flex items-center">
@@ -284,7 +284,7 @@ export default function ProductDetail() {
               )}
 
               <div className="space-y-4">
-                {currentUser ? (
+                {currentUser || isGuest ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={handleAddToCart}
