@@ -39,11 +39,11 @@ import { ThemeProvider } from "./contexts/ThemeContext"
 import ScrollToTop from "./components/ScrollToTop"
 
 function App() {
-  // Get base URL from environment or default to "/e-commerce" for GitHub Pages
-  const basename = process.env.PUBLIC_URL || "/e-commerce";
+  // Remove or modify the basename config when using HashRouter
+  // const basename = process.env.PUBLIC_URL || "/e-commerce";
 
   return (
-    <Router basename={basename}>
+    <Router>
       <AuthProvider>
         <CartProvider>
           <ThemeProvider>
