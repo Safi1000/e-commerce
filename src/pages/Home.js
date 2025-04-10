@@ -100,15 +100,7 @@ export default function Home() {
   // Fetch categories with caching
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: async () => {
-      const categoriesRef = collection(db, "categories")
-      const q = query(categoriesRef, orderBy("name"))
-      const querySnapshot = await getDocs(q)
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-    },
+    queryFn: fetchCategories,
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 30 * 60 * 1000, // 30 minutes
   })
@@ -413,14 +405,14 @@ export default function Home() {
       </section>
 
       {/* Categories */}
-      <section className={`${isDark ? "py-20 bg-black" : "py-20 bg-white"} ${isDark ? "" : "border-b-2 border-gray-800"}`}>
+      <section className={`${isDark ? "py-10 bg-black" : "py-10 bg-white"} ${isDark ? "" : "border-b-2 border-gray-800"}`}>
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="mb-12"
+            className="mb-6"
           >
             <h2 className="text-3xl font-bold mb-2 text-center font-poppins">SHOP BY CATEGORY</h2>
             <div className={`w-24 h-1 ${isDark ? "bg-white" : "bg-gray-900"} mx-auto`}></div>
@@ -436,34 +428,43 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={staggerContainer}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+              className="flex flex-wrap justify-center gap-3"
             >
               {categories.map((category) => (
-                <motion.div key={category.id} variants={fadeIn}>
+                <motion.div 
+                  key={category.id} 
+                  variants={fadeIn}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: isDark 
+                      ? "0 10px 15px -3px rgba(255, 255, 255, 0.1), 0 4px 6px -2px rgba(255, 255, 255, 0.05)"
+                      : "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                  }}
+                >
                   <Link
                     to={`/shop?category=${category.id}`}
-                    className={`${isDark ? "bg-gray-900 border-gray-800 hover:border-gray-600" : "bg-gray-100 border-gray-900 hover:border-gray-400"} border rounded-[12px] p-8 text-center block transition-all duration-300 group`}
+                    className={`inline-flex items-center px-5 py-3 m-1 rounded-full shadow-sm transition-all duration-300 mt-12 mb-12 font-inter font-bold ${
+                      isDark 
+                        ? "bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white border border-gray-700" 
+                        : "bg-gradient-to-r from-gray-100 via-white to-gray-100 text-gray-900 border border-gray-800"
+                    }`}
                   >
                     <div
-                      className={`h-16 w-16 ${isDark ? "bg-black" : "bg-white"} rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
+                      className={`h-8 w-8 ${
+                        isDark 
+                          ? "bg-black text-white" 
+                          : "bg-white text-gray-900"
+                      } rounded-full flex items-center justify-center mr-2 shadow-md border ${isDark ? "border-gray-700" : "border-gray-500"}`}
                     >
-                      <Layers className={`h-8 w-8 ${isDark ? "text-white" : "text-gray-900"}`} />
+                      <Layers className="h-4 w-4" />
                     </div>
-                    <h3 className="text-xl font-bold mb-2 tracking-tight font-poppins">{category.name}</h3>
-                    <p className={isDark ? "text-gray-400 text-sm font-inter" : "text-gray-600 text-sm font-inter"}>
-                      {category.description || "Browse products"}
-                    </p>
-                    <div
-                      className={`mt-4 ${isDark ? "text-white" : "text-gray-900"} opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center`}
-                    >
-                      <span className="text-sm">Explore</span>
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </div>
+                    <span className="font-medium">{category.name}</span>
                   </Link>
                 </motion.div>
               ))}
             </motion.div>
           )}
+ 
         </div>
       </section>
 

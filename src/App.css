@@ -40,3 +40,18 @@
     transform: rotate(360deg);
   }
 }
+
+/* Hide scrollbar while maintaining scroll functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Additional styling for scroll-snap */
+.scroll-snap-align-start {
+  scroll-snap-align: start;
+}
