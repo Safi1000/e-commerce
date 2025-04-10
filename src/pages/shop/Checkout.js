@@ -13,19 +13,20 @@ import MaterialToast from "../../components/layouts/MaterialToast"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 export default function Checkout() {
-  const { currentUser } = useAuth()
+  const { currentUser, isGuest, guestId, getEffectiveUserId } = useAuth()
   const { cartItems, cartTotal, clearCart } = useCart()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const effectiveUserId = getEffectiveUserId()
 
   // Use React Query to fetch user profile data for pre-filling the form
   const { data: userData } = useQuery({
-    queryKey: ['userData', currentUser?.uid],
+    queryKey: ['userData', effectiveUserId],
     queryFn: async () => {
-      if (!currentUser) return null
+      if (!effectiveUserId) return null
       
       try {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid))
+        const userDoc = await getDoc(doc(db, "users", effectiveUserId))
         return userDoc.exists() ? userDoc.data() : null
       } catch (error) {
         console.error("Error fetching user data:", error)
@@ -34,13 +35,13 @@ export default function Checkout() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 30 * 60 * 1000, // 30 minutes
-    enabled: !!currentUser,
+    enabled: !!effectiveUserId,
     // Add retry logic to prevent excessive retries
     retry: 1,
     retryDelay: 1000
   })
 
-  // Use React Query to fetch user's recent orders
+  // Use React Query to fetch user's recent orders - only for signed-in users
   const recentOrdersKey = currentUser ? ['recentOrders', currentUser.uid] : null
   const { data: recentOrders = [] } = useQuery({
     queryKey: recentOrdersKey,
@@ -72,6 +73,43 @@ export default function Checkout() {
     retry: 1,
     retryDelay: 1000
   })
+
+  // Also fetch guest orders if in guest mode
+  const guestOrdersKey = isGuest && guestId ? ['guestOrders', guestId] : null
+  const { data: guestOrders = [] } = useQuery({
+    queryKey: guestOrdersKey,
+    queryFn: async () => {
+      if (!guestId || !isGuest) return []
+      
+      try {
+        const ordersRef = collection(db, "orders")
+        const q = query(
+          ordersRef, 
+          where("userId", "==", guestId), 
+          orderBy("createdAt", "desc"), 
+          limit(5)
+        )
+        const querySnapshot = await getDocs(q)
+        return querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      } catch (error) {
+        console.error("Error fetching guest orders:", error)
+        return []
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!guestOrdersKey,
+    retry: 1,
+    retryDelay: 1000
+  })
+
+  // Combine orders for display
+  const allOrders = [...(recentOrders || []), ...(guestOrders || [])].sort((a, b) => 
+    new Date(b.createdAt) - new Date(a.createdAt)
+  ).slice(0, 5)
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -276,7 +314,8 @@ export default function Checkout() {
           total,
         },
         status: "pending",
-        userId: currentUser?.uid || "guest",
+        userId: effectiveUserId,
+        isGuestOrder: isGuest,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -284,9 +323,11 @@ export default function Checkout() {
       // Save order to Firestore
       const orderRef = await addDoc(collection(db, "orders"), orderData)
 
-      // Invalidate the recentOrders query to trigger a refetch
+      // Invalidate the relevant orders query to trigger a refetch
       if (currentUser) {
         queryClient.invalidateQueries(['recentOrders', currentUser.uid])
+      } else if (isGuest && guestId) {
+        queryClient.invalidateQueries(['guestOrders', guestId])
       }
 
       // Store order details

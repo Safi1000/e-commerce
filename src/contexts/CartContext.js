@@ -14,17 +14,18 @@ export function useCart() {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([])
-  const { currentUser } = useAuth()
+  const { currentUser, guestId, isGuest, getEffectiveUserId } = useAuth()
   const queryClient = useQueryClient()
+  const effectiveUserId = getEffectiveUserId()
 
-  // Use React Query to fetch cart data
+  // Use React Query to fetch cart data for both registered and guest users
   const { data: firestoreCart, isLoading } = useQuery({
-    queryKey: ['cart', currentUser?.uid],
+    queryKey: ['cart', effectiveUserId],
     queryFn: async () => {
-      if (!currentUser) return null
+      if (!effectiveUserId) return null
       
       try {
-        const cartDoc = await getDoc(doc(db, "carts", currentUser.uid))
+        const cartDoc = await getDoc(doc(db, "carts", effectiveUserId))
         if (cartDoc.exists()) {
           return cartDoc.data().items || []
         }
@@ -36,18 +37,19 @@ export function CartProvider({ children }) {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 30 * 60 * 1000, // 30 minutes
-    enabled: !!currentUser
+    enabled: !!effectiveUserId
   })
 
   // Use mutation for saving cart - using useCallback to prevent recreation on each render
   const saveCartToFirestore = useCallback(async (items) => {
-    if (!currentUser) return
+    if (!effectiveUserId) return
     
     try {
-      await setDoc(doc(db, "carts", currentUser.uid), {
-        userId: currentUser.uid,
+      await setDoc(doc(db, "carts", effectiveUserId), {
+        userId: effectiveUserId,
         items,
         updatedAt: new Date().toISOString(),
+        isGuestCart: isGuest
       })
       
       // Also save to localStorage as backup
@@ -56,7 +58,7 @@ export function CartProvider({ children }) {
       console.error("Error saving cart to Firestore:", error)
       localStorage.setItem("cart", JSON.stringify(items))
     }
-  }, [currentUser])
+  }, [effectiveUserId, isGuest])
 
   // Use mutation without automatic invalidation to prevent loops
   const saveCartMutation = useMutation({
@@ -64,12 +66,20 @@ export function CartProvider({ children }) {
     // Remove the onSuccess handler to prevent loops
   })
 
+  // Initialize guest mode if needed
+  useEffect(() => {
+    // If we have a guest ID but no current user, make sure guest cart is loaded
+    if (isGuest && guestId && !currentUser) {
+      // The cart will be loaded via the useQuery hook with effectiveUserId
+    }
+  }, [isGuest, guestId, currentUser])
+
   // Load cart data when user changes or firestoreCart updates
   useEffect(() => {
     const loadCart = async () => {
       try {
-        if (currentUser) {
-          // User is logged in, use data from Firestore via React Query
+        if (effectiveUserId) {
+          // User is logged in or guest mode is active, use data from Firestore via React Query
           if (firestoreCart) {
             setCartItems(firestoreCart)
           } else {
@@ -89,7 +99,7 @@ export function CartProvider({ children }) {
             }
           }
         } else {
-          // User is not logged in, get cart from localStorage
+          // No effective user ID, get cart from localStorage
           const localCart = localStorage.getItem("cart")
           if (localCart) {
             setCartItems(JSON.parse(localCart))
@@ -108,7 +118,7 @@ export function CartProvider({ children }) {
     }
 
     loadCart()
-  }, [currentUser, firestoreCart, saveCartToFirestore])
+  }, [effectiveUserId, firestoreCart, saveCartToFirestore])
 
   // Save cart data when it changes - with a ref to track if it's from user action
   const [shouldSaveCart, setShouldSaveCart] = useState(false)
@@ -116,17 +126,17 @@ export function CartProvider({ children }) {
   useEffect(() => {
     // Only save if cart has been initialized and we've had user interaction
     if (cartItems.length >= 0 && shouldSaveCart) {
-      if (currentUser) {
-        // User is logged in, save to Firestore
+      if (effectiveUserId) {
+        // User is logged in or guest mode is active, save to Firestore
         saveCartMutation.mutate(cartItems)
       } else {
-        // User is not logged in, save to localStorage
+        // No effective user ID, save to localStorage
         localStorage.setItem("cart", JSON.stringify(cartItems))
       }
       // Reset flag after saving
       setShouldSaveCart(false)
     }
-  }, [cartItems, currentUser, saveCartMutation, shouldSaveCart])
+  }, [cartItems, effectiveUserId, saveCartMutation, shouldSaveCart])
 
   // Wrapped cart modification functions to set the save flag
   const addToCart = (product, quantity = 1) => {
