@@ -1,5 +1,5 @@
 "use client"
-
+import { useQuery } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { collection, getDocs, query, limit, orderBy, where } from "firebase/firestore"
@@ -14,87 +14,109 @@ import { NewtonsCradle } from "ldrs/react"
 import "ldrs/react/NewtonsCradle.css"
 import "../App.css"
 
+// Add these helper functions right after the imports, before the component
+const fetchFeaturedProducts = async () => {
+  // First try to fetch featured products
+  const featuredQuery = query(collection(db, "products"), where("featured", "==", true), limit(4))
+  let productsSnapshot = await getDocs(featuredQuery)
+
+  // If no featured products, fetch the most recent products
+  if (productsSnapshot.empty) {
+    const recentQuery = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(4))
+    productsSnapshot = await getDocs(recentQuery)
+  }
+
+  // Fetch images for each product
+  const productsData = await Promise.all(
+    productsSnapshot.docs.map(async (doc) => {
+      const productData = doc.data()
+      const imageUrl = await getImage(`${productData.category} ${productData.name}`, {
+        orientation: "horizontal",
+      })
+      return {
+        id: doc.id,
+        ...productData,
+        imageUrl,
+      }
+    }),
+  )
+
+  return productsData
+}
+
+const fetchCategories = async () => {
+  const categoriesSnapshot = await getDocs(collection(db, "categories"))
+  const categoriesData = categoriesSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }))
+  return categoriesData
+}
+
+const fetchHeroImages = async () => {
+  const [heroImg, showcaseImg] = await Promise.all([
+    getImage("gaming setup workspace", { orientation: "horizontal" }),
+    getImage("gaming pc build", { orientation: "horizontal" }),
+  ])
+  return { heroImg, showcaseImg }
+}
+
 export default function Home() {
-  const [featuredProducts, setFeaturedProducts] = useState([])
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
   const [addedToCart, setAddedToCart] = useState(null)
-  const [heroImage, setHeroImage] = useState("")
-  const [showcaseImage, setShowcaseImage] = useState("")
   const { addToCart } = useCart()
   const { currentUser } = useAuth()
   const { theme } = useTheme()
 
   const isDark = theme === "dark"
 
+  // Fetch hero images with caching
+  const { data: heroImages, isLoading: heroImagesLoading } = useQuery({
+    queryKey: ['heroImages'],
+    queryFn: fetchHeroImages,
+    staleTime: 60 * 60 * 1000, // 1 hour
+    cacheTime: 24 * 60 * 60 * 1000, // 24 hours
+  })
+
+  // State for images (keep these for backward compatibility)
+  const [heroImage, setHeroImage] = useState("")
+  const [showcaseImage, setShowcaseImage] = useState("")
+
+  // Update hero images when data changes
   useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const [heroImg, showcaseImg] = await Promise.all([
-          getImage("gaming setup workspace", { orientation: "horizontal" }),
-          getImage("gaming pc build", { orientation: "horizontal" }),
-        ])
-        setHeroImage(heroImg)
-        setShowcaseImage(showcaseImg)
-      } catch (error) {
-        console.error("Error fetching hero images:", error)
-      }
+    if (heroImages) {
+      setHeroImage(heroImages.heroImg)
+      setShowcaseImage(heroImages.showcaseImg)
     }
+  }, [heroImages])
 
-    fetchImages()
-  }, [])
+  // Fetch featured products with caching
+  const { data: featuredProducts = [], isLoading: productsLoading } = useQuery({
+    queryKey: ['featuredProducts'],
+    queryFn: fetchFeaturedProducts,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+  })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        // Add a small delay to show the loading spinner
-        await new Promise((resolve) => setTimeout(resolve, 500))
+  // Fetch categories with caching
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const categoriesRef = collection(db, "categories")
+      const q = query(categoriesRef, orderBy("name"))
+      const querySnapshot = await getDocs(q)
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+  })
 
-        // First try to fetch featured products
-        const featuredQuery = query(collection(db, "products"), where("featured", "==", true), limit(4))
-        let productsSnapshot = await getDocs(featuredQuery)
+  // Combine loading states to match the original behavior
+  const loading = productsLoading || categoriesLoading || heroImagesLoading
 
-        // If no featured products, fetch the most recent products
-        if (productsSnapshot.empty) {
-          const recentQuery = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(4))
-          productsSnapshot = await getDocs(recentQuery)
-        }
-
-        // Fetch images for each product
-        const productsData = await Promise.all(
-          productsSnapshot.docs.map(async (doc) => {
-            const productData = doc.data()
-            const imageUrl = await getImage(`${productData.category} ${productData.name}`, {
-              orientation: "horizontal",
-            })
-            return {
-              id: doc.id,
-              ...productData,
-              imageUrl,
-            }
-          }),
-        )
-
-        setFeaturedProducts(productsData)
-
-        // Fetch categories
-        const categoriesSnapshot = await getDocs(collection(db, "categories"))
-        const categoriesData = categoriesSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        setCategories(categoriesData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
+  // Keep the rest of the component exactly the same
   const handleAddToCart = (product) => {
     addToCart(product, 1)
     setAddedToCart(product.id)
@@ -105,6 +127,7 @@ export default function Home() {
     }, 3000)
   }
 
+  // Keep all the animation constants and helper functions
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -127,6 +150,7 @@ export default function Home() {
       : `https://via.placeholder.com/${width}x${height}/f5f5f5/333333?text=ShopEase`
   }
 
+  // Keep the loading UI
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-black" : "bg-gray-100"}`}>
@@ -135,6 +159,7 @@ export default function Home() {
     )
   }
 
+  // Keep the rest of the component exactly the same
   return (
     <div className={isDark ? "bg-black text-white" : "bg-white text-gray-900"}>
       {/* Hero Section */}
@@ -277,7 +302,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className={isDark ? "py-20 bg-gray-900" : "py-20 bg-gray-100"}>
+      <section className={`${isDark ? "py-20 bg-gray-900" : "py-20 bg-gray-100"} ${isDark ? "" : "border-b-2 border-gray-800"}`}>
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -324,7 +349,7 @@ export default function Home() {
                     <div className="flex flex-col space-y-3">
                       <Link
                         to={`/product/${product.id}`}
-                        className={`w-full bg-transparent ${isDark ? "border-white text-white hover:bg-white hover:text-black" : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"} border px-4 py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter`}
+                        className={`w-full bg-transparent ${isDark ? "border-white text-white hover:bg-white hover:text-black" : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"} border px-4 py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter font-bold`}
                       >
                         View Details
                         <ChevronRight size={16} />
@@ -356,7 +381,7 @@ export default function Home() {
                       ) : (
                         <Link
                           to="/login"
-                          className={`w-full ${isDark ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300"} px-4 py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter`}
+                          className={`w-full ${isDark ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300"} px-4 py-2 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter font-bold`}
                         >
                           Sign in to add to cart
                           <ChevronRight size={16} />
@@ -378,7 +403,7 @@ export default function Home() {
           >
             <Link
               to="/shop"
-              className={`group bg-transparent border-2 ${isDark ? "border-white text-white hover:bg-white hover:text-black" : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"} px-8 py-3 rounded-[12px] font-medium inline-flex items-center transition-all duration-300`}
+              className={`group bg-transparent border-2 ${isDark ? "border-white text-white hover:bg-white hover:text-black" : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"} px-8 py-3 rounded-[12px] font-bold font-inter inline-flex items-center transition-all duration-300`}
             >
               View All Products
               <ChevronRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
@@ -388,7 +413,7 @@ export default function Home() {
       </section>
 
       {/* Categories */}
-      <section className={isDark ? "py-20 bg-black" : "py-20 bg-white"}>
+      <section className={`${isDark ? "py-20 bg-black" : "py-20 bg-white"} ${isDark ? "" : "border-b-2 border-gray-800"}`}>
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -444,9 +469,10 @@ export default function Home() {
 
       {/* Features */}
       <section
-        className={
-          isDark ? "py-20 bg-gradient-to-b from-gray-900 to-black" : "py-20 bg-gradient-to-b from-gray-100 to-white"
-        }
+        className={`
+          ${isDark ? "py-20 bg-gradient-to-b from-gray-900 to-black" : "py-20 bg-gradient-to-b from-gray-100 to-white"}
+          ${isDark ? "" : "border-b-2 border-gray-800"}
+        `}
       >
         <div className="container mx-auto px-4">
           <motion.div

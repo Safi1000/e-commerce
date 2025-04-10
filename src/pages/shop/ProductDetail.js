@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, Link, useNavigate } from "react-router-dom"
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom"
 import { doc, getDoc } from "firebase/firestore"
 import { db } from "../../firebase/config"
 import { useAuth } from "../../contexts/AuthContext"
@@ -11,26 +11,28 @@ import { motion } from "framer-motion"
 import { ShoppingCart, ShoppingBag, ChevronLeft, Check, AlertTriangle, Plus, Minus } from "lucide-react"
 import { NewtonsCradle } from 'ldrs/react'
 import 'ldrs/react/NewtonsCradle.css'
+import { useQuery } from "@tanstack/react-query"
 
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser } = useAuth()
   const { addToCart } = useCart()
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
   const [relatedImages, setRelatedImages] = useState([])
   const [activeImage, setActiveImage] = useState(0)
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
+  // Fetch product data with React Query
+  const { data: product, isLoading: loading } = useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
       window.scrollTo(0, 0) // Scroll to top when loading
       try {
         const docRef = doc(db, "products", id)
         const docSnap = await getDoc(docRef)
+        
         if (docSnap.exists()) {
           const productData = docSnap.data()
 
@@ -46,24 +48,27 @@ export default function ProductDetail() {
             additionalImages.push(relatedImage)
           }
 
+          // Update related images state
           setRelatedImages([imageUrl, ...additionalImages])
-          setProduct({
+          
+          return {
             id: docSnap.id,
             ...productData,
             imageUrl,
-          })
+          }
         } else {
           console.error("Product not found")
+          return null
         }
       } catch (error) {
         console.error("Error fetching product:", error)
-      } finally {
-        setLoading(false)
+        return null
       }
-    }
-
-    fetchProduct()
-  }, [id])
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    retry: 1,
+  })
 
   const handleQuantityChange = (e) => {
     const value = e.target.value;
@@ -74,7 +79,6 @@ export default function ProductDetail() {
     }
   };
   
-
   const incrementQuantity = () => {
     setQuantity((prev) => prev + 1)
   }
@@ -249,7 +253,7 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              {currentUser && (
+              {currentUser ? (
                 <div className="mb-8">
                   <h3 className="text-xl font-bold mb-3 font-poppins">QUANTITY</h3>
                   <div className="flex items-center">
@@ -272,6 +276,10 @@ export default function ProductDetail() {
                       <Plus size={20} />
                     </button>
                   </div>
+                </div>
+              ) : (
+                <div className="mb-8">
+           
                 </div>
               )}
 
@@ -300,7 +308,7 @@ export default function ProductDetail() {
                   </div>
                 ) : (
                   <Link
-                    to="/login"
+                    to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
                     className="inline-block bg-white text-black py-3 px-6 rounded-[12px] hover:bg-gray-200 transition-colors text-center w-full font-inter font-bold"
                   >
                     Sign in to Buy

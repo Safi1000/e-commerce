@@ -7,14 +7,71 @@ import { useAuth } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
 import { motion } from "framer-motion"
 import { ChevronLeft, CreditCard, ShoppingBag, CheckCircle } from "lucide-react"
-import { collection, addDoc } from "firebase/firestore"
+import { collection, addDoc, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore"
 import { db } from "../../firebase/config"
 import MaterialToast from "../../components/layouts/MaterialToast"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 export default function Checkout() {
   const { currentUser } = useAuth()
   const { cartItems, cartTotal, clearCart } = useCart()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  // Use React Query to fetch user profile data for pre-filling the form
+  const { data: userData } = useQuery({
+    queryKey: ['userData', currentUser?.uid],
+    queryFn: async () => {
+      if (!currentUser) return null
+      
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid))
+        return userDoc.exists() ? userDoc.data() : null
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        return null
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!currentUser,
+    // Add retry logic to prevent excessive retries
+    retry: 1,
+    retryDelay: 1000
+  })
+
+  // Use React Query to fetch user's recent orders
+  const recentOrdersKey = currentUser ? ['recentOrders', currentUser.uid] : null
+  const { data: recentOrders = [] } = useQuery({
+    queryKey: recentOrdersKey,
+    queryFn: async () => {
+      if (!currentUser) return []
+      
+      try {
+        const ordersRef = collection(db, "orders")
+        const q = query(
+          ordersRef, 
+          where("userId", "==", currentUser.uid), 
+          orderBy("createdAt", "desc"), 
+          limit(5)
+        )
+        const querySnapshot = await getDocs(q)
+        return querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      } catch (error) {
+        console.error("Error fetching orders:", error)
+        return []
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!recentOrdersKey,
+    // Add retry logic to prevent excessive retries
+    retry: 1,
+    retryDelay: 1000
+  })
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -31,6 +88,23 @@ export default function Checkout() {
     expYear: "",
     cvv: "",
   })
+
+  // Pre-fill form with user data when available
+  useEffect(() => {
+    if (userData && currentUser) {
+      setFormData(prevData => ({
+        ...prevData,
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        email: currentUser.email || "",
+        address: userData.address || "",
+        city: userData.city || "",
+        state: userData.state || "",
+        zipCode: userData.zipCode || "",
+        country: userData.country || "United States",
+      }))
+    }
+  }, [userData, currentUser])
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -209,6 +283,11 @@ export default function Checkout() {
 
       // Save order to Firestore
       const orderRef = await addDoc(collection(db, "orders"), orderData)
+
+      // Invalidate the recentOrders query to trigger a refetch
+      if (currentUser) {
+        queryClient.invalidateQueries(['recentOrders', currentUser.uid])
+      }
 
       // Store order details
       setOrderDetails({

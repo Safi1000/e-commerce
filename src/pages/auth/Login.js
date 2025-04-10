@@ -214,7 +214,10 @@ export default function Login() {
             <div className="mt-6 text-center">
               <p className="text-gray-400 font-inter">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-white hover:text-gray-300 font-medium">
+                <Link 
+                  to={`/register${location.search}`} 
+                  className="text-white hover:text-gray-300 font-medium"
+                >
                   Sign up
                 </Link>
               </p>

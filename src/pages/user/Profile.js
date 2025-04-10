@@ -10,10 +10,12 @@ import { motion } from "framer-motion"
 import { User, ShoppingCart, ShoppingBag, LogOut, Check, AlertTriangle } from "lucide-react"
 import { NewtonsCradle } from 'ldrs/react'
 import 'ldrs/react/NewtonsCradle.css'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 
 export default function Profile() {
   const { currentUser, logout } = useAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [userData, setUserData] = useState({
     name: "",
@@ -25,48 +27,94 @@ export default function Profile() {
     country: "",
   })
 
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
+  const [orders, setOrders] = useState([])
+  const [activeTab, setActiveTab] = useState("orders")
 
-  useEffect(() => {
-    fetchUserData()
-  }, [currentUser])
-
-  const fetchUserData = async () => {
-    try {
-      if (currentUser) {
+  // Fetch user data with React Query
+  const { data: userProfileData, isLoading } = useQuery({
+    queryKey: ['userProfile', currentUser?.uid],
+    queryFn: async () => {
+      if (!currentUser) return null
+      
+      try {
         const userDoc = await getDoc(doc(db, "users", currentUser.uid))
         if (userDoc.exists()) {
-          const data = userDoc.data()
-          setUserData({
-            name: data.name || currentUser.displayName || "",
-            email: currentUser.email || "",
-            address: data.address || "",
-            city: data.city || "",
-            state: data.state || "",
-            zipCode: data.zipCode || "",
-            country: data.country || "",
-          })
-        } else {
-          setUserData({
-            name: currentUser.displayName || "",
-            email: currentUser.email || "",
-            address: "",
-            city: "",
-            state: "",
-            zipCode: "",
-            country: "",
-          })
+          return userDoc.data()
         }
+        return null
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        return null
       }
-    } catch (error) {
-      console.error("Error fetching user data:", error)
-      setMessage({ type: "error", text: "Failed to load user data" })
-    } finally {
-      setLoading(false)
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!currentUser,
+    retry: 1,
+  })
+
+  // Update user data useEffect
+  useEffect(() => {
+    if (userProfileData && currentUser) {
+      setUserData({
+        name: userProfileData.name || currentUser.displayName || "",
+        email: currentUser.email || "",
+        address: userProfileData.address || "",
+        city: userProfileData.city || "",
+        state: userProfileData.state || "",
+        zipCode: userProfileData.zipCode || "",
+        country: userProfileData.country || "",
+      })
+    } else if (currentUser && !userProfileData) {
+      // No user profile data exists yet
+      setUserData({
+        name: currentUser.displayName || "",
+        email: currentUser.email || "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+      })
     }
-  }
+  }, [userProfileData, currentUser])
+
+  // Use mutation for updating profile
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updatedData) => {
+      // Update user profile in Firebase Auth
+      if (currentUser.displayName !== updatedData.name) {
+        await updateProfile(currentUser, {
+          displayName: updatedData.name,
+        })
+      }
+
+      // Update user data in Firestore
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        name: updatedData.name,
+        address: updatedData.address,
+        city: updatedData.city,
+        state: updatedData.state,
+        zipCode: updatedData.zipCode,
+        country: updatedData.country,
+        updatedAt: new Date().toISOString(),
+      })
+    },
+    onSuccess: () => {
+      setMessage({ type: "success", text: "Profile updated successfully" })
+      // Invalidate and refetch user profile data
+      queryClient.invalidateQueries(['userProfile', currentUser?.uid])
+    },
+    onError: (error) => {
+      console.error("Error updating profile:", error)
+      setMessage({ type: "error", text: "Failed to update profile" })
+    },
+    onSettled: () => {
+      setSaving(false)
+    }
+  })
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -80,33 +128,9 @@ export default function Profile() {
     e.preventDefault()
     setSaving(true)
     setMessage({ type: "", text: "" })
-
-    try {
-      // Update user profile in Firebase Auth
-      if (currentUser.displayName !== userData.name) {
-        await updateProfile(currentUser, {
-          displayName: userData.name,
-        })
-      }
-
-      // Update user data in Firestore
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        name: userData.name,
-        address: userData.address,
-        city: userData.city,
-        state: userData.state,
-        zipCode: userData.zipCode,
-        country: userData.country,
-        updatedAt: new Date().toISOString(),
-      })
-
-      setMessage({ type: "success", text: "Profile updated successfully" })
-    } catch (error) {
-      console.error("Error updating profile:", error)
-      setMessage({ type: "error", text: "Failed to update profile" })
-    } finally {
-      setSaving(false)
-    }
+    
+    // Use the mutation to update the profile
+    updateProfileMutation.mutate(userData)
   }
 
   const handleLogout = async () => {
@@ -124,7 +148,7 @@ export default function Profile() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-black text-white min-h-screen">
         <div className="container mx-auto px-4 py-12">

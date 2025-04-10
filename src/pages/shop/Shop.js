@@ -13,12 +13,88 @@ import { Search, Filter, X, Check, ChevronRight, ShoppingBag } from "lucide-reac
 import { Slider } from "@mui/material"
 import { NewtonsCradle } from "ldrs/react"
 import "ldrs/react/NewtonsCradle.css"
+import { useQuery } from "@tanstack/react-query"
+
+// Add this function before the Shop component
+const fetchProductImage = async (productData) => {
+  const imageUrl = await getImage(`${productData.category} ${productData.name}`, { orientation: "horizontal" })
+  return imageUrl
+}
+
+// Add this image cache service before the Shop component
+const imageCacheService = {
+  cache: new Map(),
+  preloadQueue: new Set(),
+  isPreloading: false,
+  maxConcurrentLoads: 5, // Increased for more aggressive loading
+  loadedImages: new Set(), // Track loaded images
+  failedImages: new Set(), // Track failed images
+
+  async preloadImage(url) {
+    if (!url || this.cache.has(url) || this.loadedImages.has(url) || this.failedImages.has(url)) return;
+    
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        this.cache.set(url, true);
+        this.loadedImages.add(url);
+        resolve();
+      };
+      img.onerror = (error) => {
+        console.error('Error loading image:', url, error);
+        this.failedImages.add(url);
+        resolve(); // Resolve anyway to continue processing
+      };
+      img.src = url;
+    });
+  },
+
+  async preloadImages(urls) {
+    const uniqueUrls = [...new Set(urls)].filter(url => 
+      url && 
+      !this.cache.has(url) && 
+      !this.loadedImages.has(url) && 
+      !this.failedImages.has(url)
+    );
+    
+    if (uniqueUrls.length === 0) return;
+    
+    // Add to preload queue
+    uniqueUrls.forEach(url => this.preloadQueue.add(url));
+    
+    // Process queue if not already processing
+    if (!this.isPreloading) {
+      this.processPreloadQueue();
+    }
+  },
+
+  async processPreloadQueue() {
+    if (this.preloadQueue.size === 0) {
+      this.isPreloading = false;
+      return;
+    }
+    
+    this.isPreloading = true;
+    const urls = Array.from(this.preloadQueue).slice(0, this.maxConcurrentLoads);
+    this.preloadQueue = new Set([...this.preloadQueue].filter(url => !urls.includes(url)));
+    
+    try {
+      await Promise.all(urls.map(url => this.preloadImage(url)));
+    } catch (error) {
+      console.error('Error preloading images:', error);
+    }
+    
+    // Process next batch immediately
+    if (this.preloadQueue.size > 0) {
+      this.processPreloadQueue();
+    } else {
+      this.isPreloading = false;
+    }
+  }
+};
 
 export default function Shop() {
-  const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("")
   const [priceRange, setPriceRange] = useState({ min: "", max: "" })
   const [searchTerm, setSearchTerm] = useState("")
@@ -30,16 +106,48 @@ export default function Shop() {
   const { addToCart } = useCart()
   const { currentUser } = useAuth()
 
-  // Initial data fetch
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      window.scrollTo(0, 0) // Scroll to top when loading
-      await Promise.all([fetchCategories(), fetchProducts()])
-      setLoading(false)
-    }
-    fetchData()
-  }, [])
+  // Fetch products with React Query and image caching
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const productsSnapshot = await getDocs(collection(db, "products"))
+      const productsList = await Promise.all(
+        productsSnapshot.docs.map(async (doc) => {
+          const productData = doc.data()
+          const imageUrl = await fetchProductImage(productData)
+          // Preload the image immediately when fetched
+          if (imageUrl) {
+            imageCacheService.preloadImage(imageUrl)
+          }
+          return {
+            id: doc.id,
+            ...productData,
+            imageUrl,
+          }
+        }),
+      )
+      return productsList
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+  })
+
+  // Fetch categories with React Query
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const categoriesSnapshot = await getDocs(collection(db, "categories"))
+      return categoriesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+  })
+
+  // Combine loading states
+  const loading = productsLoading || categoriesLoading
 
   // Handle URL parameters and initial filtering
   useEffect(() => {
@@ -87,40 +195,6 @@ export default function Shop() {
       setFilteredProducts(filtered)
     }
   }, [location.search, products])
-
-  const fetchCategories = async () => {
-    try {
-      const categoriesSnapshot = await getDocs(collection(db, "categories"))
-      const categoriesList = categoriesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-      setCategories(categoriesList)
-    } catch (error) {
-      console.error("Error fetching categories:", error)
-    }
-  }
-
-  const fetchProducts = async () => {
-    try {
-      const productsSnapshot = await getDocs(collection(db, "products"))
-      const productsList = await Promise.all(
-        productsSnapshot.docs.map(async (doc) => {
-          const productData = doc.data()
-          const imageUrl = await getImage(`${productData.category} ${productData.name}`, { orientation: "horizontal" })
-          return {
-            id: doc.id,
-            ...productData,
-            imageUrl,
-          }
-        }),
-      )
-      setProducts(productsList)
-      setFilteredProducts(productsList)
-    } catch (error) {
-      console.error("Error fetching products:", error)
-    }
-  }
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
@@ -311,6 +385,18 @@ export default function Shop() {
     signInButton:
       theme === "dark" ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300",
   }
+
+  // Preload images when products are loaded or filtered
+  useEffect(() => {
+    if (filteredProducts.length > 0) {
+      const imageUrls = filteredProducts
+        .map(product => product.imageUrl)
+        .filter(url => url); // Filter out any null/undefined URLs
+      
+      // Preload all images immediately
+      imageCacheService.preloadImages(imageUrls);
+    }
+  }, [filteredProducts]);
 
   return (
     <div className={`${styles.background} ${styles.text} min-h-screen`}>
@@ -547,6 +633,18 @@ export default function Shop() {
                         src={product.imageUrl || getPlaceholderImage(400, 300)}
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                        loading="lazy"
+                        onLoad={(e) => {
+                          // Add the image to the cache service
+                          if (e.target.src && !e.target.src.includes('placeholder')) {
+                            imageCacheService.preloadImage(e.target.src);
+                          }
+                        }}
+                        onError={(e) => {
+                          // Handle image loading errors
+                          console.error('Error loading image:', e.target.src);
+                          e.target.src = getPlaceholderImage(400, 300);
+                        }}
                       />
                     </div>
                     <div className="p-5">
@@ -562,7 +660,7 @@ export default function Shop() {
                     <div className="px-5 pb-5 space-y-3">
                       <Link
                         to={`/product/${product.id}`}
-                        className={`w-full bg-transparent border ${styles.buttonOutline} px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter`}
+                        className={`w-full bg-transparent border ${styles.buttonOutline} px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter font-bold`}
                       >
                         View Details
                         <ChevronRight size={16} />
@@ -571,25 +669,35 @@ export default function Shop() {
                       {currentUser ? (
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className={`w-full py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter ${
-                            addedToCart === product.id ? styles.addedToCartButton : styles.button
+                          className={`w-full h-full px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter ${
+                            addedToCart === product.id
+                              ? "bg-green-600 text-white"
+                              : theme === "dark"
+                                ? "bg-white text-black hover:bg-gray-200"
+                                : "bg-gray-900 text-white hover:bg-gray-800"
                           }`}
                           disabled={addedToCart === product.id}
                         >
                           {addedToCart === product.id ? (
                             <>
-                              Added to Cart <Check size={16} />
+                              Added to Cart
+                              <Check size={16} />
                             </>
                           ) : (
                             <>
-                              Add to Cart <ShoppingBag size={16} />
+                              Add to Cart
+                              <ShoppingBag size={16} />
                             </>
                           )}
                         </button>
                       ) : (
                         <Link
-                          to="/login"
-                          className={`w-full ${styles.signInButton} px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter`}
+                          to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                          className={`w-full ${
+                            theme === "dark"
+                              ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          } px-4 py-3 rounded-[12px] transition-colors flex items-center justify-center gap-2 font-inter font-bold`}
                         >
                           Sign in to add to cart
                           <ChevronRight size={16} />

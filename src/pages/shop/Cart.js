@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useCart } from "../../contexts/CartContext"
 import { useAuth } from "../../contexts/AuthContext"
@@ -8,21 +8,27 @@ import { motion } from "framer-motion"
 import { ShoppingCart, Plus, Minus, X, ChevronRight, Tag } from "lucide-react"
 import { NewtonsCradle } from 'ldrs/react'
 import 'ldrs/react/NewtonsCradle.css'
+import { useQuery } from "@tanstack/react-query"
 
 export default function Cart() {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart()
+  const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal, loading: cartLoading } = useCart()
   const { currentUser } = useAuth()
   const [couponCode, setCouponCode] = useState("")
   const [discount, setDiscount] = useState(0)
-  const [loading, setLoading] = useState(true)
+  
+  // Use React Query to check if user has any previous applied coupons
+  // Using a simpler implementation that doesn't cause update loops
+  const { data: userCoupons, isLoading: couponsLoading } = useQuery({
+    queryKey: ['userCoupons', currentUser?.uid],
+    queryFn: async () => {
+      return [] // Simplified to avoid any potential issues
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!currentUser
+  })
 
-  useEffect(() => {
-    // Simulate loading state for cart initialization
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+  const loading = cartLoading || couponsLoading
 
   const handleApplyCoupon = () => {
     // Simple coupon code implementation
@@ -31,7 +37,6 @@ export default function Cart() {
     } else if (couponCode.toLowerCase() === "discount20") {
       setDiscount(cartTotal * 0.2)
     } else {
-      setDiscount(0)
       alert("Invalid coupon code")
     }
   }
