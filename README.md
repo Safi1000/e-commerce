@@ -68,3 +68,68 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# ShopEase E-commerce Platform
+
+## GitHub Pages Deployment Guide
+
+If you're deploying this app to GitHub Pages, follow these steps to ensure proper routing:
+
+### Automatic Deployment
+
+1. Run the deployment script:
+   - On Windows: `.\deploy-gh-pages.bat`
+   - On macOS/Linux: `bash deploy-gh-pages.sh`
+
+2. Wait for the deployment to complete. Your site will be available at https://safi1000.github.io/e-commerce/
+
+### Manual Deployment
+
+1. Build the project:
+   ```
+   npm run build
+   ```
+
+2. Copy the 404.html file to the build directory:
+   ```
+   cp public/404.html build/
+   ```
+
+3. Add a .nojekyll file to bypass GitHub Pages processing:
+   ```
+   touch build/.nojekyll
+   ```
+
+4. Deploy using gh-pages:
+   ```
+   npm run deploy
+   ```
+
+### Fixing Routing Issues
+
+If you encounter the "There isn't a GitHub Pages site here" error when navigating to different pages or after refreshing, the issue is due to GitHub Pages not handling client-side routing correctly. This happens because:
+
+1. GitHub Pages serves a 404 page when it can't find a file that matches the requested URL
+2. React Router is a client-side routing solution, so GitHub Pages doesn't know how to handle routes like `/shop` or `/product/123`
+
+Our solution uses these techniques:
+
+1. A custom `404.html` page that redirects to the main page with the requested path in the URL
+2. A script in `index.html` that reads this path and passes it to React Router
+3. Using HashRouter instead of BrowserRouter (which uses the `#` symbol in URLs)
+
+If you still encounter issues:
+- Make sure your browser isn't blocking the redirect scripts
+- Try clearing your browser cache
+- Verify that your repository settings are correctly set up for GitHub Pages deployment
+
+### Testing Locally
+
+To test the GitHub Pages build locally, you can use a simple HTTP server:
+
+```
+npm install -g serve
+serve -s build
+```
+
+This will serve your built application on `http://localhost:3000`.

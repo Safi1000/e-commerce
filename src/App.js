@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { onAuthChange } from "./firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { db } from "./firebase/config"
@@ -39,8 +39,11 @@ import { ThemeProvider } from "./contexts/ThemeContext"
 import ScrollToTop from "./components/ScrollToTop"
 
 function App() {
+  // Get base URL from environment or default to "/e-commerce" for GitHub Pages
+  const basename = process.env.PUBLIC_URL || "/e-commerce";
+
   return (
-    <Router>
+    <Router basename={basename}>
       <AuthProvider>
         <CartProvider>
           <ThemeProvider>
