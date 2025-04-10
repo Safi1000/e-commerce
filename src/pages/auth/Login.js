@@ -16,6 +16,7 @@ export default function Login() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [backgroundImage, setBackgroundImage] = useState("")
+  const [validationErrors, setValidationErrors] = useState({})
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -28,8 +29,33 @@ export default function Login() {
     fetchImage()
   }, [])
 
+  const validateForm = () => {
+    const errors = {}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    
+    if (!email) {
+      errors.email = "Email is required"
+    } else if (!emailRegex.test(email)) {
+      errors.email = "Please enter a valid email address"
+    }
+    
+    if (!password) {
+      errors.password = "Password is required"
+    } else if (password.length < 6) {
+      errors.password = "Password must be at least 6 characters"
+    }
+    
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+    
     try {
       setError("")
       setLoading(true)
@@ -111,10 +137,15 @@ export default function Login() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className={`w-full pl-10 px-4 py-3 bg-black border ${
+                      validationErrors.email ? 'border-red-500' : 'border-gray-800'
+                    } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter`}
                     placeholder="Enter your email"
                   />
                 </div>
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-500 font-inter">{validationErrors.email}</p>
+                )}
               </div>
 
               <div>
@@ -131,10 +162,15 @@ export default function Login() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className={`w-full pl-10 px-4 py-3 bg-black border ${
+                      validationErrors.password ? 'border-red-500' : 'border-gray-800'
+                    } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter`}
                     placeholder="Enter your password"
                   />
                 </div>
+                {validationErrors.password && (
+                  <p className="mt-1 text-sm text-red-500 font-inter">{validationErrors.password}</p>
+                )}
               </div>
 
               <div>

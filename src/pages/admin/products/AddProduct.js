@@ -21,6 +21,7 @@ export default function AddProduct() {
   const [error, setError] = useState("")
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
   const [shouldNavigate, setShouldNavigate] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -80,13 +81,39 @@ export default function AddProduct() {
     }
   };
 
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!name.trim()) {
+      errors.name = "Product name is required";
+    }
+    
+    if (!price.trim()) {
+      errors.price = "Price is required";
+    } else if (isNaN(price) || parseFloat(price) <= 0) {
+      errors.price = "Price must be a positive number";
+    }
+    
+    if (!stock.trim()) {
+      errors.stock = "Stock is required";
+    } else if (isNaN(stock) || parseInt(stock) < 0) {
+      errors.stock = "Stock must be a non-negative number";
+    }
+    
+    if (!categoryId) {
+      errors.categoryId = "Category is required";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
 
-    if (!name || !price || !categoryId) {
-      setError("Please fill all required fields")
-      return
+    if (!validateForm()) {
+      return;
     }
 
     setLoading(true)
@@ -165,9 +192,12 @@ export default function AddProduct() {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className={`mt-1 block w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   required
                 />
+                {validationErrors.name && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -194,14 +224,17 @@ export default function AddProduct() {
                   onChange={(e) => setPrice(e.target.value)}
                   min="0"
                   step="0.01"
-                  className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className={`mt-1 block w-full border ${validationErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   required
                 />
+                {validationErrors.price && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.price}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
-                  Stock
+                  Stock *
                 </label>
                 <input
                   type="number"
@@ -210,8 +243,12 @@ export default function AddProduct() {
                   onChange={(e) => setStock(e.target.value)}
                   min="0"
                   step="1"
-                  className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className={`mt-1 block w-full border ${validationErrors.stock ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  required
                 />
+                {validationErrors.stock && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.stock}</p>
+                )}
               </div>
 
               <div>
@@ -222,7 +259,7 @@ export default function AddProduct() {
                   id="category"
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className={`mt-1 block w-full border ${validationErrors.categoryId ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   required
                 >
                   <option value="">Select a category</option>
@@ -232,6 +269,9 @@ export default function AddProduct() {
                     </option>
                   ))}
                 </select>
+                {validationErrors.categoryId && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.categoryId}</p>
+                )}
               </div>
 
               <div className="md:col-span-2">

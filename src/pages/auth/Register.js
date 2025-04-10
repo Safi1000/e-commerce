@@ -17,6 +17,7 @@ export default function Register() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [backgroundImage, setBackgroundImage] = useState("")
+  const [validationErrors, setValidationErrors] = useState({})
   const { register } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -29,12 +30,47 @@ export default function Register() {
     fetchImage()
   }, [])
 
+  const validateForm = () => {
+    const errors = {}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const nameRegex = /^[a-zA-Z\s]{2,50}$/
+    
+    if (!name) {
+      errors.name = "Name is required"
+    } else if (!nameRegex.test(name)) {
+      errors.name = "Name should only contain letters and spaces (2-50 characters)"
+    }
+    
+    if (!email) {
+      errors.email = "Email is required"
+    } else if (!emailRegex.test(email)) {
+      errors.email = "Please enter a valid email address"
+    }
+    
+    if (!password) {
+      errors.password = "Password is required"
+    } else if (password.length < 6) {
+      errors.password = "Password must be at least 6 characters"
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      errors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    }
+    
+    if (!confirmPassword) {
+      errors.confirmPassword = "Please confirm your password"
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match"
+    }
+    
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
 
-    if (password !== confirmPassword) {
-      return setError("Passwords do not match")
+    if (!validateForm()) {
+      return
     }
 
     setLoading(true)
@@ -118,10 +154,15 @@ export default function Register() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className={`w-full pl-10 px-4 py-3 bg-black border ${
+                      validationErrors.name ? 'border-red-500' : 'border-gray-800'
+                    } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter`}
                     placeholder="Enter your full name"
                   />
                 </div>
+                {validationErrors.name && (
+                  <p className="mt-1 text-sm text-red-500 font-inter">{validationErrors.name}</p>
+                )}
               </div>
 
               <div>
@@ -138,10 +179,15 @@ export default function Register() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className={`w-full pl-10 px-4 py-3 bg-black border ${
+                      validationErrors.email ? 'border-red-500' : 'border-gray-800'
+                    } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter`}
                     placeholder="Enter your email"
                   />
                 </div>
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-500 font-inter">{validationErrors.email}</p>
+                )}
               </div>
 
               <div>
@@ -158,10 +204,15 @@ export default function Register() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className={`w-full pl-10 px-4 py-3 bg-black border ${
+                      validationErrors.password ? 'border-red-500' : 'border-gray-800'
+                    } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter`}
                     placeholder="Create a password"
                   />
                 </div>
+                {validationErrors.password && (
+                  <p className="mt-1 text-sm text-red-500 font-inter">{validationErrors.password}</p>
+                )}
               </div>
 
               <div>
@@ -178,10 +229,15 @@ export default function Register() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 px-4 py-3 bg-black border border-gray-800 rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter"
+                    className={`w-full pl-10 px-4 py-3 bg-black border ${
+                      validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-800'
+                    } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white font-inter`}
                     placeholder="Confirm your password"
                   />
                 </div>
+                {validationErrors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-500 font-inter">{validationErrors.confirmPassword}</p>
+                )}
               </div>
 
               <div>

@@ -23,6 +23,7 @@ export default function EditProduct() {
   const [saving, setSaving] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState("")
+  const [validationErrors, setValidationErrors] = useState({})
 
   useEffect(() => {
     fetchProduct()
@@ -99,12 +100,38 @@ export default function EditProduct() {
     }
   }
 
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!name.trim()) {
+      errors.name = "Product name is required"
+    }
+    
+    if (!price.trim()) {
+      errors.price = "Price is required"
+    } else if (isNaN(price) || parseFloat(price) <= 0) {
+      errors.price = "Price must be a positive number"
+    }
+    
+    if (!stock.trim()) {
+      errors.stock = "Stock is required"
+    } else if (isNaN(stock) || parseInt(stock) <= 0) {
+      errors.stock = "Stock must be greater than 0"
+    }
+    
+    if (!categoryId) {
+      errors.categoryId = "Category is required"
+    }
+    
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
 
-    if (!name || !price || !categoryId) {
-      setError("Please fill all required fields")
+    if (!validateForm()) {
       return
     }
 
@@ -194,175 +221,190 @@ export default function EditProduct() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
+    <div className="bg-white text-black min-h-screen">
+      <div>
+        <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
 
-      <div className="bg-white rounded-[12px] shadow p-6">
-        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-[12px]">{error}</div>}
+        <div className="bg-white rounded-[12px] shadow p-6">
+          {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-[12px]">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Product Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                Price ($) *
-              </label>
-              <input
-                type="number"
-                id="price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                min="0"
-                step="0.01"
-                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
-                Stock
-              </label>
-              <input
-                type="number"
-                id="stock"
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
-                min="0"
-                step="1"
-                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                Category *
-              </label>
-              <select
-                id="category"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Product Image</label>
-              <div className="mt-1 flex items-center">
-                {imagePreview ? (
-                  <div className="relative">
-                    <img
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Preview"
-                      className="h-32 w-32 object-cover rounded-[12px]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImage(null)
-                        setImagePreview("")
-                        setImageUrl("")
-                      }}
-                      className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1"
-                    >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-32 w-32 border-2 border-gray-300 border-dashed rounded-[12px] flex items-center justify-center">
-                    <svg className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  Product Name *
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={`mt-1 block w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  required
+                />
+                {validationErrors.name && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
                 )}
-                <div className="ml-4 flex-1">
-                  <div className="relative bg-white py-2 px-3 border border-gray-300 rounded-[12px] shadow-sm flex items-center cursor-pointer hover:bg-gray-50">
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={handleImageChange}
-                      accept="image/*"
-                    />
-                    <span className="text-sm font-medium text-gray-700">
-                      {imagePreview ? "Change image" : "Upload image"}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF or WEBP up to 5MB</p>
+              </div>
 
-                  {/* Upload progress bar */}
-                  {uploadProgress > 0 && (
-                    <div className="mt-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Uploading: {uploadProgress}%</p>
+              <div className="md:col-span-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                  Price ($) *
+                </label>
+                <input
+                  type="number"
+                  id="price"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  min="0"
+                  step="0.01"
+                  className={`mt-1 block w-full border ${validationErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  required
+                />
+                {validationErrors.price && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.price}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
+                  Stock *
+                </label>
+                <input
+                  type="number"
+                  id="stock"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  min="1"
+                  step="1"
+                  className={`mt-1 block w-full border ${validationErrors.stock ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  required
+                />
+                {validationErrors.stock && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.stock}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                  Category *
+                </label>
+                <select
+                  id="category"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className={`mt-1 block w-full border ${validationErrors.categoryId ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {validationErrors.categoryId && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.categoryId}</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Product Image</label>
+                <div className="mt-1 flex items-center">
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview || "/placeholder.svg"}
+                        alt="Preview"
+                        className="h-32 w-32 object-cover rounded-[12px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImage(null)
+                          setImagePreview("")
+                          setImageUrl("")
+                        }}
+                        className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-32 w-32 border-2 border-gray-300 border-dashed rounded-[12px] flex items-center justify-center">
+                      <svg className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
                     </div>
                   )}
+                  <div className="ml-4 flex-1">
+                    <div className="relative bg-white py-2 px-3 border border-gray-300 rounded-[12px] shadow-sm flex items-center cursor-pointer hover:bg-gray-50">
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        {imagePreview ? "Change image" : "Upload image"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF or WEBP up to 5MB</p>
+
+                    {/* Upload progress bar */}
+                    {uploadProgress > 0 && (
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Uploading: {uploadProgress}%</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="mt-6 flex justify-end">
-            <button
-              type="button"
-              onClick={() => navigate("/admin/products")}
-              className="bg-white py-2 px-4 border border-gray-300 rounded-[12px] shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-blue-600 py-2 px-4 border border-transparent rounded-[12px] shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </form>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => navigate("/admin/products")}
+                className="bg-white py-2 px-4 border border-gray-300 rounded-[12px] shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-blue-600 py-2 px-4 border border-transparent rounded-[12px] shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

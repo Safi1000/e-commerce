@@ -38,6 +38,7 @@ export default function Checkout() {
   const [shouldNavigate, setShouldNavigate] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
   const [preventRedirect, setPreventRedirect] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     // Redirect to cart if cart is empty, but not if we've just placed an order
@@ -71,8 +72,95 @@ export default function Checkout() {
     }
   };
 
+  const validateForm = () => {
+    const errors = {}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const nameRegex = /^[a-zA-Z\s]{2,50}$/
+    const zipCodeRegex = /^\d{5}(-\d{4})?$/
+    const cardNumberRegex = /^\d{16}$/
+    const cvvRegex = /^\d{3,4}$/
+    
+    // Name validation
+    if (!formData.firstName) {
+      errors.firstName = "First name is required"
+    } else if (!nameRegex.test(formData.firstName)) {
+      errors.firstName = "First name should only contain letters and spaces (2-50 characters)"
+    }
+    
+    if (!formData.lastName) {
+      errors.lastName = "Last name is required"
+    } else if (!nameRegex.test(formData.lastName)) {
+      errors.lastName = "Last name should only contain letters and spaces (2-50 characters)"
+    }
+    
+    // Email validation
+    if (!formData.email) {
+      errors.email = "Email is required"
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = "Please enter a valid email address"
+    }
+    
+    // Address validation
+    if (!formData.address) {
+      errors.address = "Address is required"
+    }
+    
+    if (!formData.city) {
+      errors.city = "City is required"
+    }
+    
+    if (!formData.state) {
+      errors.state = "State is required"
+    }
+    
+    if (!formData.zipCode) {
+      errors.zipCode = "ZIP code is required"
+    } else if (!zipCodeRegex.test(formData.zipCode)) {
+      errors.zipCode = "Please enter a valid ZIP code"
+    }
+    
+    // Card validation
+    if (!formData.cardName) {
+      errors.cardName = "Cardholder name is required"
+    } else if (!nameRegex.test(formData.cardName)) {
+      errors.cardName = "Cardholder name should only contain letters and spaces (2-50 characters)"
+    }
+    
+    if (!formData.cardNumber) {
+      errors.cardNumber = "Card number is required"
+    } else if (!cardNumberRegex.test(formData.cardNumber.replace(/\s/g, ''))) {
+      errors.cardNumber = "Please enter a valid 16-digit card number"
+    }
+    
+    if (!formData.expMonth) {
+      errors.expMonth = "Expiration month is required"
+    } else if (parseInt(formData.expMonth) < 1 || parseInt(formData.expMonth) > 12) {
+      errors.expMonth = "Please enter a valid month (1-12)"
+    }
+    
+    if (!formData.expYear) {
+      errors.expYear = "Expiration year is required"
+    } else if (parseInt(formData.expYear) < new Date().getFullYear()) {
+      errors.expYear = "Please enter a valid year"
+    }
+    
+    if (!formData.cvv) {
+      errors.cvv = "CVV is required"
+    } else if (!cvvRegex.test(formData.cvv)) {
+      errors.cvv = "Please enter a valid CVV (3-4 digits)"
+    }
+    
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return
+    }
+    
     setLoading(true);
     setError("");
     
@@ -281,10 +369,10 @@ export default function Checkout() {
                   e.preventDefault();
                   handleSubmit(e);
                 }}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        First Name *
+                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">
+                        First Name
                       </label>
                       <input
                         type="text"
@@ -292,14 +380,18 @@ export default function Checkout() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.firstName ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="First Name"
                       />
+                      {validationErrors.firstName && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.firstName}</p>
+                      )}
                     </div>
-
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Last Name *
+                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">
+                        Last Name
                       </label>
                       <input
                         type="text"
@@ -307,44 +399,61 @@ export default function Checkout() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.lastName ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="Last Name"
                       />
+                      {validationErrors.lastName && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.lastName}</p>
+                      )}
                     </div>
+                  </div>
 
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
-                      />
-                    </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 bg-black border ${
+                        validationErrors.email ? 'border-red-500' : 'border-gray-800'
+                      } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                      placeholder="Email Address"
+                    />
+                    {validationErrors.email && (
+                      <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
+                    )}
+                  </div>
 
-                    <div>
-                      <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Address *
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
-                      />
-                    </div>
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-2">
+                      Street Address
+                    </label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 bg-black border ${
+                        validationErrors.address ? 'border-red-500' : 'border-gray-800'
+                      } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                      placeholder="Street Address"
+                    />
+                    {validationErrors.address && (
+                      <p className="mt-1 text-sm text-red-500">{validationErrors.address}</p>
+                    )}
+                  </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="city" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        City *
+                      <label htmlFor="city" className="block text-sm font-medium text-gray-300 mb-2">
+                        City
                       </label>
                       <input
                         type="text"
@@ -352,14 +461,18 @@ export default function Checkout() {
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.city ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="City"
                       />
+                      {validationErrors.city && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.city}</p>
+                      )}
                     </div>
-
                     <div>
-                      <label htmlFor="state" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        State *
+                      <label htmlFor="state" className="block text-sm font-medium text-gray-300 mb-2">
+                        State
                       </label>
                       <input
                         type="text"
@@ -367,14 +480,18 @@ export default function Checkout() {
                         name="state"
                         value={formData.state}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.state ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="State"
                       />
+                      {validationErrors.state && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.state}</p>
+                      )}
                     </div>
-
                     <div>
-                      <label htmlFor="zipCode" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        ZIP Code *
+                      <label htmlFor="zipCode" className="block text-sm font-medium text-gray-300 mb-2">
+                        ZIP Code
                       </label>
                       <input
                         type="text"
@@ -382,42 +499,22 @@ export default function Checkout() {
                         name="zipCode"
                         value={formData.zipCode}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.zipCode ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="ZIP Code"
                       />
+                      {validationErrors.zipCode && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.zipCode}</p>
+                      )}
                     </div>
+                  </div>
 
+                  <div className="border-t border-gray-800 pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Payment Information</h3>
                     <div>
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Country *
-                      </label>
-                      <select
-                        id="country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
-                      >
-                        <option value="United States">United States</option>
-                        <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Australia">Australia</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center mb-6">
-                    <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center mr-4">
-                      <CreditCard className="h-5 w-5 text-white" />
-                    </div>
-                    <h2 className="text-xl font-bold font-poppins">PAYMENT INFORMATION</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="md:col-span-2">
-                      <label htmlFor="cardName" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Name on Card *
+                      <label htmlFor="cardName" className="block text-sm font-medium text-gray-300 mb-2">
+                        Cardholder Name
                       </label>
                       <input
                         type="text"
@@ -425,14 +522,19 @@ export default function Checkout() {
                         name="cardName"
                         value={formData.cardName}
                         onChange={handleChange}
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.cardName ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="Cardholder Name"
                       />
+                      {validationErrors.cardName && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.cardName}</p>
+                      )}
                     </div>
 
-                    <div className="md:col-span-2">
-                      <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Card Number *
+                    <div className="mt-4">
+                      <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-300 mb-2">
+                        Card Number
                       </label>
                       <input
                         type="text"
@@ -440,58 +542,74 @@ export default function Checkout() {
                         name="cardNumber"
                         value={formData.cardNumber}
                         onChange={handleChange}
-                        placeholder="XXXX XXXX XXXX XXXX"
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
+                        className={`w-full px-4 py-3 bg-black border ${
+                          validationErrors.cardNumber ? 'border-red-500' : 'border-gray-800'
+                        } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                        placeholder="Card Number"
                       />
+                      {validationErrors.cardNumber && (
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.cardNumber}</p>
+                      )}
                     </div>
 
-                    <div>
-                      <label htmlFor="expMonth" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Expiration Month *
-                      </label>
-                      <input
-                        type="text"
-                        id="expMonth"
-                        name="expMonth"
-                        value={formData.expMonth}
-                        onChange={handleChange}
-                        placeholder="MM"
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="expYear" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        Expiration Year *
-                      </label>
-                      <input
-                        type="text"
-                        id="expYear"
-                        name="expYear"
-                        value={formData.expYear}
-                        onChange={handleChange}
-                        placeholder="YYYY"
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="cvv" className="block text-sm font-medium text-gray-300 mb-1 font-inter">
-                        CVV *
-                      </label>
-                      <input
-                        type="text"
-                        id="cvv"
-                        name="cvv"
-                        value={formData.cvv}
-                        onChange={handleChange}
-                        placeholder="XXX"
-                        className="block w-full bg-black border border-gray-700 rounded-[12px] py-2 px-3 focus:outline-none focus:border-white text-white"
-                        required
-                      />
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div>
+                        <label htmlFor="expMonth" className="block text-sm font-medium text-gray-300 mb-2">
+                          Exp. Month
+                        </label>
+                        <input
+                          type="text"
+                          id="expMonth"
+                          name="expMonth"
+                          value={formData.expMonth}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-3 bg-black border ${
+                            validationErrors.expMonth ? 'border-red-500' : 'border-gray-800'
+                          } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                          placeholder="MM"
+                        />
+                        {validationErrors.expMonth && (
+                          <p className="mt-1 text-sm text-red-500">{validationErrors.expMonth}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label htmlFor="expYear" className="block text-sm font-medium text-gray-300 mb-2">
+                          Exp. Year
+                        </label>
+                        <input
+                          type="text"
+                          id="expYear"
+                          name="expYear"
+                          value={formData.expYear}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-3 bg-black border ${
+                            validationErrors.expYear ? 'border-red-500' : 'border-gray-800'
+                          } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                          placeholder="YYYY"
+                        />
+                        {validationErrors.expYear && (
+                          <p className="mt-1 text-sm text-red-500">{validationErrors.expYear}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label htmlFor="cvv" className="block text-sm font-medium text-gray-300 mb-2">
+                          CVV
+                        </label>
+                        <input
+                          type="text"
+                          id="cvv"
+                          name="cvv"
+                          value={formData.cvv}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-3 bg-black border ${
+                            validationErrors.cvv ? 'border-red-500' : 'border-gray-800'
+                          } rounded-[12px] focus:outline-none focus:border-white transition-colors text-white`}
+                          placeholder="CVV"
+                        />
+                        {validationErrors.cvv && (
+                          <p className="mt-1 text-sm text-red-500">{validationErrors.cvv}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
