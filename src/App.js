@@ -61,15 +61,19 @@ function App() {
               <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
               <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
               
-              {/* Protected Routes - only for authenticated users */}
+              {/* Protected Routes - only for authenticated users (not guests) */}
               <Route path="/profile" element={
-                <PrivateRoute>
+                <AuthenticatedRoute>
                   <UserLayout><Profile /></UserLayout>
-                </PrivateRoute>
+                </AuthenticatedRoute>
               } />
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
+              {/* Admin Routes - only for admin users */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }>
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<ProductList />} />
                 <Route path="products/add" element={<AddProduct />} />
@@ -135,7 +139,36 @@ function PrivateRoute({ children }) {
   return children
 }
 
-// Admin route component
+// Authenticated route component - only allows authenticated users (not guests)
+function AuthenticatedRoute({ children }) {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const unsubscribe = onAuthChange((currentUser) => {
+      setUser(currentUser)
+      setLoading(false)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    )
+  }
+
+  // Only allow authenticated users (not guests)
+  if (!user) {
+    return <Navigate to="/" />
+  }
+
+  return children
+}
+
+// Admin route component - only allows admin users
 function AdminRoute({ children }) {
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -175,7 +208,7 @@ function AdminRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" />
+    return <Navigate to="/" />
   }
 
   if (!isAdmin) {
