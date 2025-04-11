@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { collection, getDocs, query, limit, orderBy, where } from "firebase/firestore"
+import { collection, getDocs, query, limit, orderBy, where, doc, getDoc } from "firebase/firestore"
 import { db } from "../firebase/config"
 import { useCart } from "../contexts/CartContext"
 import { useAuth } from "../contexts/AuthContext"
@@ -66,6 +66,8 @@ export default function Home() {
   const { addToCart } = useCart()
   const { currentUser, isGuest } = useAuth()
   const { theme } = useTheme()
+  const [heroText, setHeroText] = useState("Your one-stop shop for all your needs. Discover premium products with uncompromising quality.")
+  const [heroLoading, setHeroLoading] = useState(true)
 
   const isDark = theme === "dark"
 
@@ -105,6 +107,25 @@ export default function Home() {
     cacheTime: 30 * 60 * 1000, // 30 minutes
   })
 
+  // Fetch hero text
+  useEffect(() => {
+    const fetchHeroText = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "hero"))
+        
+        if (settingsDoc.exists()) {
+          setHeroText(settingsDoc.data().text)
+        }
+      } catch (error) {
+        console.error("Error fetching hero text:", error)
+      } finally {
+        setHeroLoading(false)
+      }
+    }
+
+    fetchHeroText()
+  }, [])
+
   // Combine loading states to match the original behavior
   const loading = productsLoading || categoriesLoading || heroImagesLoading
 
@@ -143,10 +164,10 @@ export default function Home() {
   }
 
   // Keep the loading UI
-  if (loading) {
+  if (heroLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-black" : "bg-gray-100"}`}>
-        <NewtonsCradle size="100" speed="1.4" color={isDark ? "white" : "#333333"} />
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     )
   }
@@ -234,7 +255,7 @@ export default function Home() {
 
                 {/* Description */}
                 <p className={`text-xl mb-8 ${theme === "dark" ? "text-gray-400" : "text-gray-600"} font-inter leading-relaxed`}>
-                  Your one-stop shop for all your needs. Discover premium products with uncompromising quality.
+                  {heroText}
                 </p>
 
                 {/* Stats */}

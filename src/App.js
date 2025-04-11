@@ -20,6 +20,7 @@ import CategoryList from "./pages/admin/categories/CategoryList"
 import AddCategory from "./pages/admin/categories/AddCategory"
 import EditCategory from "./pages/admin/categories/EditCategory"
 import OrderList from "./pages/admin/orders/OrderList"
+import Settings from "./pages/admin/Settings"
 
 // User Components
 import UserLayout from "./components/layouts/UserLayout"
@@ -77,6 +78,7 @@ function App() {
                 <Route path="categories/add" element={<AddCategory />} />
                 <Route path="categories/edit/:id" element={<EditCategory />} />
                 <Route path="orders" element={<OrderList />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
 
               {/* Catch All */}
