@@ -5,7 +5,8 @@ import React from "react"
 import { useState, useEffect } from "react"
 import { collection, getDocs, query, where, orderBy, doc, updateDoc } from "firebase/firestore"
 import { db } from "../../../firebase/config"
-import { format as formatDate } from "date-fns"
+import { format as formatDateFromDateFns } from "date-fns"
+import { Printer, X } from "lucide-react"
 
 export default function OrderList() {
   const [orders, setOrders] = useState([])
@@ -13,6 +14,7 @@ export default function OrderList() {
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [dateRange, setDateRange] = useState({ start: "", end: "" })
   const [expandedOrderId, setExpandedOrderId] = useState(null)
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null)
 
   // Status options for filtering and updating
   const statusOptions = [
@@ -102,8 +104,9 @@ export default function OrderList() {
 
   const formatDate = (dateString) => {
     try {
-      return formatDate(new Date(dateString), "MMM dd, yyyy h:mm a")
+      return formatDateFromDateFns(new Date(dateString), "MMM dd, yyyy h:mm a")
     } catch (error) {
+      console.error("Date formatting error:", error)
       return "Invalid date"
     }
   }
@@ -129,6 +132,18 @@ export default function OrderList() {
   const clearFilters = () => {
     setSelectedStatus("all")
     setDateRange({ start: "", end: "" })
+  }
+
+  const handleViewInvoice = (order) => {
+    setSelectedOrderForInvoice(order)
+  }
+
+  const handleCloseInvoice = () => {
+    setSelectedOrderForInvoice(null)
+  }
+
+  const handlePrintInvoice = () => {
+    window.print()
   }
 
   return (
@@ -241,21 +256,33 @@ export default function OrderList() {
                         {getStatusBadge(order.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <select
-                          value={order.status}
-                          onChange={(e) => {
-                            e.stopPropagation()
-                            handleStatusChange(order.id, e.target.value)
-                          }}
-                          className="border border-gray-300 rounded-[12px] shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {statusOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleViewInvoice(order)
+                            }}
+                            className="text-blue-600 hover:text-blue-800"
+                            title="View Invoice"
+                          >
+                            <Printer size={18} />
+                          </button>
+                          <select
+                            value={order.status}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              handleStatusChange(order.id, e.target.value)
+                            }}
+                            className="border border-gray-300 rounded-[12px] shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {statusOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </td>
                     </tr>
 
@@ -376,6 +403,148 @@ export default function OrderList() {
           </div>
         )}
       </div>
+
+      {/* Invoice Modal */}
+      {selectedOrderForInvoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[12px] shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Invoice</h2>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handlePrintInvoice}
+                    className="bg-blue-600 text-white py-2 px-4 rounded-[12px] hover:bg-blue-700 transition-colors flex items-center"
+                  >
+                    <Printer size={18} className="mr-2" />
+                    Print
+                  </button>
+                  <button
+                    onClick={handleCloseInvoice}
+                    className="bg-gray-200 text-gray-800 py-2 px-4 rounded-[12px] hover:bg-gray-300 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="invoice-content">
+                <div className="grid grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">ShopEase</h3>
+                    <p className="text-gray-600">123 E-Commerce Street</p>
+                    <p className="text-gray-600">New York, NY 10001</p>
+                    <p className="text-gray-600">contact@shopease.com</p>
+                  </div>
+                  <div className="text-right">
+                    <h3 className="text-lg font-bold mb-2">Invoice #{selectedOrderForInvoice.id.slice(0, 8)}</h3>
+                    <p className="text-gray-600">Date: {formatDate(selectedOrderForInvoice.createdAt)}</p>
+                    <p className="text-gray-600">Status: {selectedOrderForInvoice.status}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Bill To:</h3>
+                    <p className="text-gray-600">
+                      {selectedOrderForInvoice.customer.firstName} {selectedOrderForInvoice.customer.lastName}
+                    </p>
+                    <p className="text-gray-600">{selectedOrderForInvoice.customer.address}</p>
+                    <p className="text-gray-600">
+                      {selectedOrderForInvoice.customer.city}, {selectedOrderForInvoice.customer.state}{" "}
+                      {selectedOrderForInvoice.customer.zipCode}
+                    </p>
+                    <p className="text-gray-600">{selectedOrderForInvoice.customer.country}</p>
+                    <p className="text-gray-600">Email: {selectedOrderForInvoice.customer.email}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Shipping Address:</h3>
+                    <p className="text-gray-600">
+                      {selectedOrderForInvoice.customer.firstName} {selectedOrderForInvoice.customer.lastName}
+                    </p>
+                    <p className="text-gray-600">{selectedOrderForInvoice.customer.address}</p>
+                    <p className="text-gray-600">
+                      {selectedOrderForInvoice.customer.city}, {selectedOrderForInvoice.customer.state}{" "}
+                      {selectedOrderForInvoice.customer.zipCode}
+                    </p>
+                    <p className="text-gray-600">{selectedOrderForInvoice.customer.country}</p>
+                  </div>
+                </div>
+
+                <table className="min-w-full divide-y divide-gray-200 mb-8">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {selectedOrderForInvoice.items.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2 text-sm text-gray-900">{item.name}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">${item.price.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{item.quantity}</td>
+                        <td className="px-4 py-2 text-sm text-gray-900 text-right">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-50">
+                    <tr>
+                      <td colSpan="3" className="px-4 py-2 text-sm font-medium text-gray-900 text-right">
+                        Subtotal:
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900 text-right">
+                        $
+                        {selectedOrderForInvoice.items
+                          .reduce((sum, item) => sum + item.price * item.quantity, 0)
+                          .toFixed(2)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="3" className="px-4 py-2 text-sm font-medium text-gray-900 text-right">
+                        Shipping:
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900 text-right">
+                        $
+                        {selectedOrderForInvoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0) > 100
+                          ? "0.00"
+                          : "10.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="3" className="px-4 py-2 text-sm font-medium text-gray-900 text-right">
+                        Tax:
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900 text-right">
+                        $
+                        {(
+                          selectedOrderForInvoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 0.08
+                        ).toFixed(2)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="3" className="px-4 py-2 text-sm font-bold text-gray-900 text-right">
+                        Total:
+                      </td>
+                      <td className="px-4 py-2 text-sm font-bold text-gray-900 text-right">
+                        ${calculateOrderTotal(selectedOrderForInvoice.items)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+
+                <div className="text-center text-gray-500 text-sm">
+                  <p>Thank you for your business!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
