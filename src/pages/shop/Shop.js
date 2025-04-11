@@ -10,7 +10,9 @@ import { useTheme } from "../../contexts/ThemeContext"
 import { getImage } from "../../utils/imageApi"
 import { motion } from "framer-motion"
 import { Search, Filter, X, Check, ChevronRight, ShoppingBag } from "lucide-react"
-import { Slider } from "@mui/material"
+import { Slider, Collapse, IconButton } from "@mui/material"
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import { NewtonsCradle } from "ldrs/react"
 import "ldrs/react/NewtonsCradle.css"
 import { useQuery } from "@tanstack/react-query"
@@ -94,8 +96,11 @@ const imageCacheService = {
 };
 
 export default function Shop() {
-  const [filteredProducts, setFilteredProducts] = useState([])
+  const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [error, setError] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState("")
+  const [expandedCategories, setExpandedCategories] = useState({})
   const [priceRange, setPriceRange] = useState({ min: "", max: "" })
   const [searchTerm, setSearchTerm] = useState("")
   const [addedToCart, setAddedToCart] = useState(null)
@@ -107,7 +112,7 @@ export default function Shop() {
   const { currentUser, isGuest } = useAuth()
 
   // Fetch products with React Query and image caching
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: productsData = [], isLoading: productsLoading } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       const productsSnapshot = await getDocs(collection(db, "products"))
@@ -133,20 +138,45 @@ export default function Shop() {
   })
 
   // Fetch categories with React Query
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+  const { data: categoriesData = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const categoriesSnapshot = await getDocs(collection(db, "categories"))
-      return categoriesSnapshot.docs.map((doc) => ({
+      const categoriesList = categoriesSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }))
+      
+      // Organize categories into a hierarchical structure
+      return organizeCategories(categoriesList)
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 30 * 60 * 1000, // 30 minutes
   })
 
-  // Combine loading states
+  // Function to organize categories into a hierarchical structure
+  const organizeCategories = (categoriesList) => {
+    // Create a map of parent categories
+    const parentCategories = categoriesList.filter(category => !category.parentCategoryId)
+    
+    // Create a map of subcategories
+    const subcategoriesMap = categoriesList.reduce((acc, category) => {
+      if (category.parentCategoryId) {
+        if (!acc[category.parentCategoryId]) {
+          acc[category.parentCategoryId] = []
+        }
+        acc[category.parentCategoryId].push(category)
+      }
+      return acc
+    }, {})
+
+    // Attach subcategories to their parent categories
+    return parentCategories.map(category => ({
+      ...category,
+      subcategories: subcategoriesMap[category.id] || []
+    }))
+  }
+
   const loading = productsLoading || categoriesLoading
 
   // Handle URL parameters and initial filtering
@@ -157,7 +187,6 @@ export default function Shop() {
     const minPrice = params.get("minPrice")
     const maxPrice = params.get("maxPrice")
 
-    // Update local state without triggering filters
     setSelectedCategory(categoryParam || "")
     setSearchTerm(searchParam || "")
     setPriceRange({
@@ -165,26 +194,34 @@ export default function Shop() {
       max: maxPrice || "",
     })
 
-    // Only apply filters if we have products
-    if (products.length > 0) {
-      let filtered = [...products]
+    if (productsData.length > 0) {
+      let filtered = [...productsData]
 
-      // Apply category filter
       if (categoryParam) {
-        filtered = filtered.filter((product) => product.categoryId === categoryParam)
+        const selectedCategory = categoriesData.find(cat => cat.id === categoryParam)
+        if (selectedCategory) {
+          if (!selectedCategory.parentCategoryId) {
+            // Parent category - include products from this category and its subcategories
+            const subcategoryIds = selectedCategory.subcategories?.map(sub => sub.id) || []
+            filtered = filtered.filter(product => 
+              product.categoryId === categoryParam || subcategoryIds.includes(product.categoryId)
+            )
+          } else {
+            // Subcategory - only include products from this specific category
+            filtered = filtered.filter(product => product.categoryId === categoryParam)
+          }
+        }
       }
 
-      // Apply search filter
       if (searchParam) {
         const search = searchParam.toLowerCase()
         filtered = filtered.filter(
           (product) =>
             product.name.toLowerCase().includes(search) ||
-            (product.description && product.description.toLowerCase().includes(search)),
+            (product.description && product.description.toLowerCase().includes(search))
         )
       }
 
-      // Apply price filter
       const min = Number.parseFloat(minPrice) || 0
       const max = Number.parseFloat(maxPrice) || Number.POSITIVE_INFINITY
       filtered = filtered.filter((product) => {
@@ -192,9 +229,9 @@ export default function Shop() {
         return price >= min && price <= max
       })
 
-      setFilteredProducts(filtered)
+      setProducts(filtered)
     }
-  }, [location.search, products])
+  }, [location.search, productsData, categoriesData])
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
@@ -251,11 +288,11 @@ export default function Shop() {
   }
 
   const handleCategoryChange = (e) => {
-    const category = e.target.value
+    const categoryId = e.target.value
+    setSelectedCategory(categoryId)
     const params = new URLSearchParams(location.search)
-
-    if (category) {
-      params.set("category", category)
+    if (categoryId) {
+      params.set("category", categoryId)
     } else {
       params.delete("category")
     }
@@ -265,14 +302,43 @@ export default function Shop() {
     if (priceRange.min) params.set("minPrice", priceRange.min)
     if (priceRange.max) params.set("maxPrice", priceRange.max)
 
-    navigate(
-      {
-        pathname: "/shop",
-        search: params.toString(),
-      },
-      { replace: true },
-    )
+    navigate(`/shop?${params.toString()}`)
   }
+
+  const toggleCategory = (categoryId) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }))
+  }
+
+  const isProductInCategory = (product) => {
+    if (!selectedCategory) return true
+    
+    // Check if the product belongs to the selected category (either as parent or subcategory)
+    if (product.categoryId === selectedCategory) return true
+    
+    // Check if the product belongs to a subcategory of the selected category
+    const selectedCategoryObj = [...categoriesData, ...categoriesData.flatMap(cat => cat.subcategories || [])]
+      .find(cat => cat.id === selectedCategory)
+    
+    if (selectedCategoryObj && selectedCategoryObj.parentCategoryId) {
+      // If the selected category is a subcategory, check if the product belongs to it
+      return product.categoryId === selectedCategory
+    } else {
+      // If the selected category is a parent category, check if the product belongs to any of its subcategories
+      const subcategories = categoriesData
+        .find(cat => cat.id === selectedCategory)?.subcategories || []
+      return subcategories.some(subcat => product.categoryId === subcat.id)
+    }
+  }
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = isProductInCategory(product)
+    const matchesPrice = product.price >= Number.parseFloat(priceRange.min) || 0 && product.price <= Number.parseFloat(priceRange.max) || Number.POSITIVE_INFINITY
+    return matchesSearch && matchesCategory && matchesPrice
+  })
 
   const handlePriceChange = (e) => {
     const { name, value } = e.target
@@ -473,7 +539,8 @@ export default function Shop() {
                   </div>
                 </div>
 
-                <div>
+                {/* Category Filter */}
+                <div className="space-y-2">
                   <h4 className={`text-sm font-semibold ${styles.subtext} mb-3 font-poppins`}>CATEGORIES</h4>
                   <div className="space-y-2">
                     <div className="flex items-center">
@@ -503,32 +570,93 @@ export default function Shop() {
                       </label>
                     </div>
 
-                    {categories.map((category) => (
-                      <div key={category.id} className="flex items-center">
-                        <input
-                          type="radio"
-                          id={category.id}
-                          name="category"
-                          value={category.id}
-                          checked={selectedCategory === category.id}
-                          onChange={handleCategoryChange}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor={category.id}
-                          className={`flex items-center cursor-pointer text-sm ${
-                            selectedCategory === category.id ? styles.radioTextActive : styles.radioTextInactive
-                          }`}
-                        >
-                          <span
-                            className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
-                              selectedCategory === category.id ? styles.checkboxActive : styles.checkboxInactive
+                    {categoriesData.map((category) => (
+                      <div key={category.id} className="space-y-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id={category.id}
+                            name="category"
+                            value={category.id}
+                            checked={selectedCategory === category.id}
+                            onChange={handleCategoryChange}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor={category.id}
+                            className={`flex items-center cursor-pointer text-sm ${
+                              selectedCategory === category.id ? styles.radioTextActive : styles.radioTextInactive
                             }`}
                           >
-                            {selectedCategory === category.id && <Check size={12} />}
-                          </span>
-                          {category.name}
-                        </label>
+                            <span
+                              className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
+                                selectedCategory === category.id ? styles.checkboxActive : styles.checkboxInactive
+                              }`}
+                            >
+                              {selectedCategory === category.id && <Check size={12} />}
+                            </span>
+                            {category.name}
+                          </label>
+                          {category.subcategories?.length > 0 && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleCategory(category.id);
+                              }}
+                              className="ml-2 text-gray-500 hover:text-gray-700"
+                            >
+                              <svg
+                                className={`w-4 h-4 transform transition-transform ${
+                                  expandedCategories[category.id] ? "rotate-180" : ""
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        
+                        {/* Subcategories dropdown */}
+                        {category.subcategories && category.subcategories.length > 0 && expandedCategories[category.id] && (
+                          <div className="ml-6 space-y-2">
+                            {category.subcategories.map((subcategory) => (
+                              <div key={subcategory.id} className="flex items-center">
+                                <input
+                                  type="radio"
+                                  id={subcategory.id}
+                                  name="category"
+                                  value={subcategory.id}
+                                  checked={selectedCategory === subcategory.id}
+                                  onChange={handleCategoryChange}
+                                  className="hidden"
+                                />
+                                <label
+                                  htmlFor={subcategory.id}
+                                  className={`flex items-center cursor-pointer text-sm ${
+                                    selectedCategory === subcategory.id ? styles.radioTextActive : styles.radioTextInactive
+                                  }`}
+                                >
+                                  <span
+                                    className={`w-4 h-4 mr-2 border flex items-center justify-center rounded-md ${
+                                      selectedCategory === subcategory.id ? styles.checkboxActive : styles.checkboxInactive
+                                    }`}
+                                  >
+                                    {selectedCategory === subcategory.id && <Check size={12} />}
+                                  </span>
+                                  {subcategory.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -636,13 +764,11 @@ export default function Shop() {
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                           loading="lazy"
                           onLoad={(e) => {
-                            // Add the image to the cache service
                             if (e.target.src && !e.target.src.includes('placeholder')) {
                               imageCacheService.preloadImage(e.target.src);
                             }
                           }}
                           onError={(e) => {
-                            // Handle image loading errors
                             console.error('Error loading image:', e.target.src);
                             e.target.src = getPlaceholderImage(400, 300);
                           }}

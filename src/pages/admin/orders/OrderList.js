@@ -5,7 +5,7 @@ import React from "react"
 import { useState, useEffect } from "react"
 import { collection, getDocs, query, where, orderBy, doc, updateDoc } from "firebase/firestore"
 import { db } from "../../../firebase/config"
-import { format } from "date-fns"
+import { format as formatDate } from "date-fns"
 
 export default function OrderList() {
   const [orders, setOrders] = useState([])
@@ -102,7 +102,7 @@ export default function OrderList() {
 
   const formatDate = (dateString) => {
     try {
-      return format(new Date(dateString), "MMM dd, yyyy h:mm a")
+      return formatDate(new Date(dateString), "MMM dd, yyyy h:mm a")
     } catch (error) {
       return "Invalid date"
     }

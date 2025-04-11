@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { db, storage } from "../../../firebase/config"
+import Toast from "../../../components/layouts/Toast"
 
 export default function EditProduct() {
   const { id } = useParams()
@@ -15,7 +16,9 @@ export default function EditProduct() {
   const [price, setPrice] = useState("")
   const [stock, setStock] = useState("")
   const [categoryId, setCategoryId] = useState("")
+  const [parentCategoryId, setParentCategoryId] = useState("")
   const [categories, setCategories] = useState([])
+  const [subcategories, setSubcategories] = useState([])
   const [image, setImage] = useState(null)
   const [imageUrl, setImageUrl] = useState("")
   const [imagePreview, setImagePreview] = useState("")
@@ -24,6 +27,7 @@ export default function EditProduct() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState("")
   const [validationErrors, setValidationErrors] = useState({})
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' })
 
   useEffect(() => {
     fetchProduct()
@@ -40,8 +44,14 @@ export default function EditProduct() {
         setPrice(productData.price?.toString() || "")
         setStock(productData.stock?.toString() || "0")
         setCategoryId(productData.categoryId || "")
+        setParentCategoryId(productData.parentCategoryId || "")
         setImageUrl(productData.imageUrl || "")
         setImagePreview(productData.imageUrl || "")
+        
+        // If the product has a parent category, fetch its subcategories
+        if (productData.parentCategoryId) {
+          fetchSubcategories(productData.parentCategoryId)
+        }
       } else {
         setError("Product not found")
         navigate("/admin/products")
@@ -61,10 +71,48 @@ export default function EditProduct() {
         id: doc.id,
         ...doc.data(),
       }))
-      setCategories(categoriesList)
+      
+      // Filter to get only parent categories (those without a parentCategoryId)
+      const parentCategories = categoriesList.filter(category => !category.parentCategoryId)
+      setCategories(parentCategories)
     } catch (error) {
       console.error("Error fetching categories:", error)
       setError("Failed to load categories")
+    }
+  }
+
+  // Fetch subcategories when a parent category is selected
+  const fetchSubcategories = async (parentId) => {
+    if (!parentId) {
+      setSubcategories([])
+      return
+    }
+    
+    try {
+      const categoriesSnapshot = await getDocs(collection(db, "categories"))
+      const categoriesList = categoriesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      
+      // Filter to get subcategories for the selected parent
+      const subcategoriesList = categoriesList.filter(category => category.parentCategoryId === parentId)
+      setSubcategories(subcategoriesList)
+    } catch (error) {
+      console.error("Error fetching subcategories:", error)
+    }
+  }
+
+  // Handle parent category change
+  const handleParentCategoryChange = (e) => {
+    const parentId = e.target.value
+    setParentCategoryId(parentId)
+    setCategoryId("") // Reset subcategory selection
+    
+    if (parentId) {
+      fetchSubcategories(parentId)
+    } else {
+      setSubcategories([])
     }
   }
 
@@ -188,28 +236,48 @@ export default function EditProduct() {
         }
       }
 
-      const selectedCategory = categories.find((cat) => cat.id === categoryId)
+      // Get the selected category (either parent or subcategory)
+      const selectedCategoryId = categoryId || parentCategoryId
+      const selectedCategory = [...categories, ...subcategories].find((cat) => cat.id === selectedCategoryId)
 
-      await updateDoc(doc(db, "products", id), {
+      const productRef = doc(db, "products", id)
+      await updateDoc(productRef, {
         name,
         description,
         price: Number.parseFloat(price),
-        stock: stock ? Number.parseInt(stock) : 0,
-        categoryId,
+        stock: Number.parseInt(stock),
+        categoryId: selectedCategoryId,
+        parentCategoryId: parentCategoryId || null,
         category: selectedCategory?.name || "",
         imageUrl: updatedImageUrl,
         updatedAt: new Date().toISOString(),
       })
 
-      alert("Product updated successfully")
-      navigate("/admin/products")
+      setToast({
+        visible: true,
+        message: 'Product updated successfully!',
+        type: 'success'
+      })
+      
+      // Navigate back to products page after a short delay
+      setTimeout(() => {
+        navigate("/admin/products")
+      }, 1500)
     } catch (error) {
       console.error("Error updating product:", error)
-      setError("Failed to update product. Please try again.")
+      setToast({
+        visible: true,
+        message: 'Error updating product. Please try again.',
+        type: 'error'
+      })
     } finally {
       setSaving(false)
       setUploadProgress(0)
     }
+  }
+
+  const handleCloseToast = () => {
+    setToast({ ...toast, visible: false })
   }
 
   if (loading) {
@@ -299,27 +367,76 @@ export default function EditProduct() {
               </div>
 
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                  Category *
+                <label htmlFor="parentCategory" className="block text-sm font-medium text-gray-700">
+                  Parent Category
                 </label>
                 <select
-                  id="category"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className={`mt-1 block w-full border ${validationErrors.categoryId ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                  required
+                  id="parentCategory"
+                  value={parentCategoryId}
+                  onChange={handleParentCategoryChange}
+                  className={`mt-1 block w-full border ${validationErrors.parentCategoryId ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                 >
-                  <option value="">Select a category</option>
+                  <option value="">Select a parent category</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
                   ))}
                 </select>
-                {validationErrors.categoryId && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.categoryId}</p>
+                {validationErrors.parentCategoryId && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.parentCategoryId}</p>
                 )}
               </div>
+
+              {parentCategoryId && subcategories.length > 0 && (
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                    Subcategory *
+                  </label>
+                  <select
+                    id="category"
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className={`mt-1 block w-full border ${validationErrors.categoryId ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    required
+                  >
+                    <option value="">Select a subcategory</option>
+                    {subcategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {validationErrors.categoryId && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.categoryId}</p>
+                  )}
+                </div>
+              )}
+
+              {!parentCategoryId && (
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                    Category *
+                  </label>
+                  <select
+                    id="category"
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className={`mt-1 block w-full border ${validationErrors.categoryId ? 'border-red-500' : 'border-gray-300'} rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {validationErrors.categoryId && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.categoryId}</p>
+                  )}
+                </div>
+              )}
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Product Image</label>
@@ -406,6 +523,12 @@ export default function EditProduct() {
           </form>
         </div>
       </div>
+      <Toast
+        isVisible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onClose={handleCloseToast}
+      />
     </div>
   )
 }

@@ -1,19 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { collection, addDoc } from "firebase/firestore"
+import { collection, addDoc, getDocs } from "firebase/firestore"
 import { db } from "../../../firebase/config"
 import Toast from "../../../components/layouts/Toast"
 
 export default function AddCategory() {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [parentCategoryId, setParentCategoryId] = useState("")
+  const [parentCategories, setParentCategories] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
   const [shouldNavigate, setShouldNavigate] = useState(false);
+
+  useEffect(() => {
+    fetchParentCategories();
+  }, []);
+
+  const fetchParentCategories = async () => {
+    try {
+      const categoriesSnapshot = await getDocs(collection(db, "categories"));
+      const categoriesList = categoriesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setParentCategories(categoriesList);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
   const handleCloseToast = () => {
     setToast({ ...toast, visible: false });
@@ -37,6 +56,8 @@ export default function AddCategory() {
       await addDoc(collection(db, "categories"), {
         name,
         description,
+        parentCategoryId: parentCategoryId || null,
+        isParent: !parentCategoryId,
         createdAt: new Date().toISOString(),
       })
 
@@ -78,6 +99,28 @@ export default function AddCategory() {
                 className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 required
               />
+            </div>
+
+            <div>
+              <label htmlFor="parentCategory" className="block text-sm font-medium text-gray-700">
+                Parent Category
+              </label>
+              <select
+                id="parentCategory"
+                value={parentCategoryId}
+                onChange={(e) => setParentCategoryId(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-[12px] shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="">None (Top-level category)</option>
+                {parentCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-sm text-gray-500">
+                Select a parent category to create a subcategory, or leave empty for a top-level category.
+              </p>
             </div>
 
             <div>
