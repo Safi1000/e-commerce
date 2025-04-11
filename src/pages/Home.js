@@ -167,7 +167,11 @@ export default function Home() {
   if (heroLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-black" : "bg-gray-100"}`}>
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        <NewtonsCradle
+          size="100"
+          speed="1.4"
+          color={isDark ? "white" : "black"}
+        />
       </div>
     )
   }

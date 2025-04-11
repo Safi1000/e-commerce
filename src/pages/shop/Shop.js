@@ -727,7 +727,7 @@ export default function Shop() {
           <div className="flex-1">
             {loading ? (
               <div className="flex justify-center items-center min-h-[60vh]">
-                <NewtonsCradle size="78" speed="1.4" color={styles.loadingColor} />
+                <NewtonsCradle size="100" speed="1.4" color={styles.loadingColor} />
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className={`${styles.card} ${styles.cardHover} rounded-[12px] p-12 text-center transition-colors`}>

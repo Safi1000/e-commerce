@@ -63,7 +63,7 @@ export default function Cart() {
         <div className="container mx-auto px-4 py-12">
           <div className="flex justify-center items-center min-h-[60vh]">
             <NewtonsCradle
-              size="78"
+              size="100"
               speed="1.4"
               color="white" 
             />
